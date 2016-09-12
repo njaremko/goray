@@ -12,7 +12,6 @@ func (m Mesh) GetColor() Vec3 {
 func (m Mesh) IntersectHit(r Ray) (bool, Hit) {
 	var pHit Hit
 	var minDistance = infinity
-	var closestTriangle Geometry
 	if isHit := m.bv.Intersect(r); !isHit {
 		return false, zeroHit
 	}
@@ -20,12 +19,11 @@ func (m Mesh) IntersectHit(r Ray) (bool, Hit) {
 		if isHit, hit := triangle.IntersectHit(r); isHit {
 			if hit.distance < minDistance {
 				pHit = hit
-				closestTriangle = triangle
 				minDistance = pHit.distance
 			}
 		}
 	}
-	if closestTriangle == nil {
+	if minDistance == infinity {
 		return false, zeroHit
 	}
 	return true, pHit
