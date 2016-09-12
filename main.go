@@ -31,6 +31,7 @@ import (
 
 var infinity = math.Inf(1)
 var zeroVec = Vec3{0, 0, 0}
+var zeroHit = Hit{0, zeroVec, zeroVec}
 var delta = math.Sqrt(1.0E-16)
 
 const MaxDepth = 2
@@ -38,8 +39,6 @@ const MaxDepth = 2
 var wg sync.WaitGroup
 
 var backgroundColor = Vec3{0.1, 0.1, 0.1}
-var sphereColor = Vec3{0.0, 0.7, 0.0}
-var ambientSphereColor = sphereColor.Mul(0.1)
 
 type Hit struct {
 	distance float64
@@ -51,18 +50,23 @@ type Ray struct {
 	origin, dir Vec3
 }
 
+type BoundingVolume interface {
+	Intersect(r Ray) bool
+}
+
 type Geometry interface {
-	Intersect(r Ray) (bool, Hit)
+	IntersectHit(r Ray) (bool, Hit)
 	GetColor() Vec3
 }
 
-func intersect(r Ray, g Geometry) (bool, Hit) {
-	return g.Intersect(r)
+type Scene struct {
+	light    Light
+	geometry []Geometry
 }
 
-type Scene struct {
-	light    Vec3
-	geometry []Geometry
+type Light struct {
+	direction Vec3
+	intensity float64
 }
 
 func (s *Scene) rayTrace(ray Ray, depth int) Vec3 {
@@ -72,7 +76,7 @@ func (s *Scene) rayTrace(ray Ray, depth int) Vec3 {
 	// Search for ray intersection in scene
 	for _, object := range s.geometry {
 		// Test if the ray hits any scene geometry
-		if isHit, hit := intersect(ray, object); isHit {
+		if isHit, hit := object.IntersectHit(ray); isHit {
 			// Ensure we draw the closest item
 			if hit.distance < minDistance {
 				pHit = hit
@@ -86,18 +90,17 @@ func (s *Scene) rayTrace(ray Ray, depth int) Vec3 {
 		return backgroundColor
 	}
 
-	light := s.light.Mul(-1)
+	light := s.light.direction.Mul(-1)
 	shadowRay := Ray{pHit.point.Add(pHit.normal.Mul(delta)), light}
 	for _, object := range s.geometry {
-		if isHit, _ := intersect(shadowRay, object); isHit {
+		if isHit, _ := object.IntersectHit(shadowRay); isHit {
 			return zeroVec
 		}
 	}
 	// How much light is reflected
 	albedo := 0.18
-	lightIntensity := 30.0
 	normalLightProduct := math.Abs(dotProduct(pHit.normal, light))
-	diffColor := albedo / math.Pi * lightIntensity * math.Max(0, normalLightProduct)
+	diffColor := albedo / math.Pi * s.light.intensity * math.Max(0, normalLightProduct)
 	return closestObject.GetColor().Mul(diffColor)
 
 }
@@ -160,25 +163,25 @@ func float2byte(f float64) byte {
 }
 
 func main() {
-	imageRes := 512
+	// Image size
+	imageRes := 256
 	w, h := imageRes, imageRes
 	// define chunk size for rendering
 	chunkSize := 16
 	t := image.NewRGBA(image.Rect(0, 0, w, h))
 	// Create geometry for the scene
-	// geometry := readObjFile("teapot.obj")
-	// ^ Warning, this will take a long time to render, just FYI
-	sp1 := &Sphere{center: Vec3{0, 0, 0}, radius: 1.0, color: Vec3{0, 0.7, 0}}
+	mesh := readObjFile("teapot.obj")
+	/*sp1 := &Sphere{center: Vec3{0, 0, 0}, radius: 1.0, color: Vec3{0, 0.7, 0}}
 	sp2 := &Sphere{center: Vec3{-2, -1.5, 1}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
 	sp3 := &Sphere{center: Vec3{-2, 1.5, 1}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
 	sp4 := &Sphere{center: Vec3{2, 1.5, 1}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
 	sp5 := &Sphere{center: Vec3{2, -1.5, 1}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
 	geometry := []Geometry{sp1, sp2, sp3, sp4, sp5}
-	/////////////////////////////////////
+	////////////////////////////////////*/
 	// Setup the renderer
-	light := Vec3{-2.0, -3.0, 2.0}.normalize()
-	scene := &Scene{light, geometry}
-	eye := Vec3{0, 0, -6.0}
+	light := Light{Vec3{-2.0, -3.0, 2.0}.normalize(), 1500}
+	scene := &Scene{light, []Geometry{mesh}}
+	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
 	jobChan := make(chan Rect)
 	renderer := Renderer{scene, t, &camera, jobChan}

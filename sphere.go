@@ -49,7 +49,31 @@ func (s *Sphere) GetCenter() Vec3 {
 	return s.center
 }
 
-func (s *Sphere) Intersect(r Ray) (bool, Hit) {
+func (s *Sphere) Intersect(r Ray) bool {
+	distance := r.origin.Sub(s.center)
+	b := dotProduct(distance, r.dir)
+	c := dotProduct(distance, distance) - s.radius*s.radius
+
+	if c > 0 && b > 0 {
+		return false
+	}
+
+	discr := b*b - c
+
+	if discr < 0 {
+		return false
+	}
+
+	t := -b - math.Sqrt(discr)
+
+	if t < 0 {
+		t = 0
+	}
+
+	return true
+}
+
+func (s *Sphere) IntersectHit(r Ray) (bool, Hit) {
 	distance := r.origin.Sub(s.center)
 	b := dotProduct(distance, r.dir)
 	c := dotProduct(distance, distance) - s.radius*s.radius

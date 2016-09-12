@@ -51,7 +51,7 @@ func (s *Triangle) GetCenter() Vec3 {
 }
 
 // Moller-Trumbore algorithm
-func (s *Triangle) Intersect(r Ray) (bool, Hit) {
+func (s *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	//Find vectors for two edges sharing V1
 	e1 := s.v2.Sub(s.v1)
 	e2 := s.v3.Sub(s.v1)
@@ -61,7 +61,7 @@ func (s *Triangle) Intersect(r Ray) (bool, Hit) {
 	det := dotProduct(e1, p)
 	//NOT CULLING
 	if det > -EPSILON && det < EPSILON {
-		return false, Hit{0, zeroVec, zeroVec}
+		return false, zeroHit
 	}
 	inv_det := 1 / det
 	//calculate distance from V1 to ray origin
@@ -70,7 +70,7 @@ func (s *Triangle) Intersect(r Ray) (bool, Hit) {
 	u := dotProduct(t, p) * inv_det
 	//The intersection lies outside of the triangle
 	if u < 0 || u > 1 {
-		return false, Hit{0, zeroVec, zeroVec}
+		return false, zeroHit
 	}
 	//Prepare to test v parameter
 	q := crossProduct(t, e1)
@@ -78,11 +78,11 @@ func (s *Triangle) Intersect(r Ray) (bool, Hit) {
 	v := dotProduct(r.dir, q) * inv_det
 	//The intersection lies outside of the triangle
 	if v < 0 || u+v > 1 {
-		return false, Hit{0, zeroVec, zeroVec}
+		return false, zeroHit
 	}
 	x := dotProduct(e2, q) * inv_det
 	if x > EPSILON { //ray intersection
 		return true, Hit{x, r.origin.Add(r.dir.Mul(x)), crossProduct(e1, e2)}
 	}
-	return false, Hit{0, zeroVec, zeroVec}
+	return false, zeroHit
 }

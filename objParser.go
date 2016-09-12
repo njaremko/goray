@@ -26,16 +26,15 @@ import (
 	"strings"
 )
 
-func readObjFile(file string) []Geometry {
+func readObjFile(file string) Mesh {
 	inputFile, err := os.Open(file)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer inputFile.Close()
-	var vectorSlice []Vec3
+	var vertexSlice []Vec3
 	var normalSlice []Vec3
-	var triangleSlice []Geometry
-	//var triangleSlice []*Triangle
+	var triangleSlice []*Triangle
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
 		parsedLine := strings.Split(scanner.Text(), " ")
@@ -53,7 +52,7 @@ func readObjFile(file string) []Geometry {
 			if err != nil {
 				log.Fatal(err)
 			}
-			vectorSlice = append(vectorSlice, Vec3{tx, ty, tz})
+			vertexSlice = append(vertexSlice, Vec3{tx, ty, tz})
 		case "vn":
 			tx, err := strconv.ParseFloat(parsedLine[1], 64)
 			if err != nil {
@@ -72,11 +71,15 @@ func readObjFile(file string) []Geometry {
 			var v1, n1, v2, n2, v3, n3 int
 			joined := strings.Join(parsedLine[1:], " ")
 			fmt.Sscanf(joined, "%d//%d %d//%d %d//%d", &v1, &n1, &v2, &n2, &v3, &n3)
-			triangleSlice = append(triangleSlice, &Triangle{v1: vectorSlice[v1-1], v2: vectorSlice[v2-1], v3: vectorSlice[v3-1], color: Vec3{0.1, 0.7, 0.9}})
+			triangleSlice = append(triangleSlice, &Triangle{v1: vertexSlice[v1-1], v2: vertexSlice[v2-1], v3: vertexSlice[v3-1], color: Vec3{0.1, 0.7, 0.9}})
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Println(os.Stderr, "reading standard input:", err)
 	}
-	return triangleSlice
+	boundingBox, err := computeBoundingBox(vertexSlice)
+	if err != nil {
+		log.Fatal("Error: ", err)
+	}
+	return Mesh{triangleSlice, boundingBox}
 }
