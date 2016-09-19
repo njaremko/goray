@@ -29,20 +29,20 @@ type Box struct {
 func (b *Box) Intersect(r Ray) bool {
 	inverseDir := r.dir.Inverse()
 
-	tx1 := (b.min.x - r.origin.x) * inverseDir.x
-	tx2 := (b.max.x - r.origin.x) * inverseDir.x
+	tx1 := (b.min[0] - r.origin[0]) * inverseDir[0]
+	tx2 := (b.max[0] - r.origin[0]) * inverseDir[0]
 
 	tmin := math.Min(tx1, tx2)
 	tmax := math.Max(tx1, tx2)
 
-	ty1 := (b.min.y - r.origin.y) * inverseDir.y
-	ty2 := (b.max.y - r.origin.y) * inverseDir.y
+	ty1 := (b.min[1] - r.origin[1]) * inverseDir[1]
+	ty2 := (b.max[1] - r.origin[1]) * inverseDir[1]
 
 	tmin = math.Max(tmin, math.Min(ty1, ty2))
 	tmax = math.Min(tmax, math.Max(ty1, ty2))
 
-	tz1 := (b.min.z - r.origin.z) * inverseDir.z
-	tz2 := (b.max.z - r.origin.z) * inverseDir.z
+	tz1 := (b.min[2] - r.origin[2]) * inverseDir[2]
+	tz2 := (b.max[2] - r.origin[2]) * inverseDir[2]
 
 	tmin = math.Max(tmin, math.Min(tz1, tz2))
 	tmax = math.Min(tmax, math.Max(tz1, tz2))

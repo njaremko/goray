@@ -138,7 +138,7 @@ func (renderer *Renderer) renderRect(r *Rect) {
 			// Compute primary ray direction
 			ray := renderer.cam.rayForPixel(x, y)
 			g := renderer.scene.rayTrace(ray, 0)
-			colour := color.RGBA{float2byte(g.x), float2byte(g.y), float2byte(g.z), 255}
+			colour := color.RGBA{float2byte(g[0]), float2byte(g[1]), float2byte(g[2]), 255}
 			renderer.img.Set(x, renderer.cam.height-(y+1), colour)
 		}
 	}
@@ -164,7 +164,7 @@ func float2byte(f float64) byte {
 
 func main() {
 	// Image size
-	imageRes := 256
+	imageRes := 128
 	w, h := imageRes, imageRes
 	// define chunk size for rendering
 	chunkSize := 16

@@ -5,6 +5,10 @@ import (
 	"math"
 )
 
+type BVH struct {
+	tree []BoundingVolume
+}
+
 func computeBoundingSphere(vertSlice []Vec3) *Sphere {
 	var avgPos Vec3
 	maxSqDist := 0.0
@@ -29,23 +33,23 @@ func computeBoundingBox(vertSlice []Vec3) (*Box, error) {
 	}
 	min, max := vertSlice[0], vertSlice[0]
 	for _, vert := range vertSlice[1:] {
-		if vert.x < min.x {
-			min.x = vert.x
+		if vert[0] < min[0] {
+			min[0] = vert[0]
 		}
-		if vert.y < min.y {
-			min.y = vert.y
+		if vert[1] < min[1] {
+			min[1] = vert[1]
 		}
-		if vert.z < min.z {
-			min.z = vert.z
+		if vert[2] < min[2] {
+			min[2] = vert[2]
 		}
-		if vert.x > max.x {
-			max.x = vert.x
+		if vert[0] > max[0] {
+			max[0] = vert[0]
 		}
-		if vert.y > max.y {
-			max.y = vert.y
+		if vert[1] > max[1] {
+			max[1] = vert[1]
 		}
-		if vert.z > max.z {
-			max.z = vert.z
+		if vert[2] > max[2] {
+			max[2] = vert[2]
 		}
 	}
 	return &Box{min, max}, nil

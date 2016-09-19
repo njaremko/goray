@@ -22,39 +22,37 @@ import (
 )
 
 // Vec3 is a representation of a 3 dimentional vector
-type Vec3 struct {
-	x, y, z float64
-}
+type Vec3 [3]float64
 
 func (v Vec3) Add(vectors ...Vec3) Vec3 {
 	for _, vector := range vectors {
-		v.x += vector.x
-		v.y += vector.y
-		v.z += vector.z
+		v[0] += vector[0]
+		v[1] += vector[1]
+		v[2] += vector[2]
 	}
 	return v
 }
 
 func (v Vec3) Sub(vectors ...Vec3) Vec3 {
 	for _, vector := range vectors {
-		v.x -= vector.x
-		v.y -= vector.y
-		v.z -= vector.z
+		v[0] -= vector[0]
+		v[1] -= vector[1]
+		v[2] -= vector[2]
 	}
 	return v
 }
 
 func (v Vec3) Mul(x float64) Vec3 {
-	v.x *= x
-	v.y *= x
-	v.z *= x
+	v[0] *= x
+	v[1] *= x
+	v[2] *= x
 	return v
 }
 
 func (v Vec3) MulVec(v2 Vec3) Vec3 {
-	v.x *= v2.x
-	v.y *= v2.y
-	v.z *= v2.z
+	v[0] *= v2[0]
+	v[1] *= v2[1]
+	v[2] *= v2[2]
 	return v
 }
 
@@ -89,9 +87,9 @@ func (v Vec3) Refract(n Vec3, ior float64) Vec3 {
 }
 
 func (v Vec3) Inverse() Vec3 {
-	v.x = 1 / v.x
-	v.y = 1 / v.y
-	v.z = 1 / v.z
+	v[0] = 1 / v[0]
+	v[1] = 1 / v[1]
+	v[2] = 1 / v[2]
 	return v
 }
 
@@ -110,9 +108,9 @@ func (v Vec3) normalize() Vec3 {
 }
 
 func dotProduct(a, b Vec3) float64 {
-	return a.x*b.x + a.y*b.y + a.z*b.z
+	return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]
 }
 
 func crossProduct(a, b Vec3) Vec3 {
-	return Vec3{a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x}
+	return Vec3{a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]}
 }
