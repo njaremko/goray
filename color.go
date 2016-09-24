@@ -4,15 +4,15 @@ import (
 	"math"
 )
 
-func ratioToColor(f float64) uint8 {
-	scaled := f * 255.0
+func ratioToColor(f float64) uint16 {
+	scaled := f * 65535
 	switch {
 	case scaled < 0:
 		scaled = 0
-	case scaled > 255:
-		scaled = 255
+	case scaled > 65535:
+		scaled = 65535
 	}
-	return uint8(scaled)
+	return uint16(scaled)
 }
 
 func colorToRatio(i uint8) float64 {

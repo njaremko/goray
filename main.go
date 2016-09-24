@@ -139,7 +139,7 @@ func (renderer *Renderer) renderRect(r *Rect) {
 			ray := renderer.cam.rayForPixel(x, y)
 			g := renderer.scene.rayTrace(ray, 0)
 			g.linearToSRGB()
-			colour := color.RGBA{ratioToColor(g.x), ratioToColor(g.y), ratioToColor(g.z), 255}
+			colour := color.RGBA64{ratioToColor(g.x), ratioToColor(g.y), ratioToColor(g.z), 65535}
 			renderer.img.Set(x, renderer.cam.height-(y+1), colour)
 		}
 	}
