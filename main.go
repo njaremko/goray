@@ -138,7 +138,8 @@ func (renderer *Renderer) renderRect(r *Rect) {
 			// Compute primary ray direction
 			ray := renderer.cam.rayForPixel(x, y)
 			g := renderer.scene.rayTrace(ray, 0)
-			colour := color.RGBA{float2byte(g.x), float2byte(g.y), float2byte(g.z), 255}
+			g.linearToSRGB()
+			colour := color.RGBA{ratioToColor(g.x), ratioToColor(g.y), ratioToColor(g.z), 255}
 			renderer.img.Set(x, renderer.cam.height-(y+1), colour)
 		}
 	}
@@ -151,27 +152,16 @@ func (renderer *Renderer) worker() {
 	}
 }
 
-func float2byte(f float64) byte {
-	scaled := 0.5 + f*255.0
-	switch {
-	case scaled < 0:
-		scaled = 0
-	case scaled > 255:
-		scaled = 255
-	}
-	return byte(scaled)
-}
-
 func main() {
 	// Image size
-	imageRes := 256
+	imageRes := 512
 	w, h := imageRes, imageRes
 	// define chunk size for rendering
 	chunkSize := 16
 	t := image.NewRGBA(image.Rect(0, 0, w, h))
 	// Create geometry for the scene
-	mesh := readObjFile("teapot.obj")
-	/*sp1 := &Sphere{center: Vec3{0, 0, 0}, radius: 1.0, color: Vec3{0, 0.7, 0}}
+	//mesh := readObjFile("teapot.obj")
+	sp1 := &Sphere{center: Vec3{0, 0, 0}, radius: 1.0, color: Vec3{0, 0.7, 0}}
 	sp2 := &Sphere{center: Vec3{-2, -1.5, 1}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
 	sp3 := &Sphere{center: Vec3{-2, 1.5, 1}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
 	sp4 := &Sphere{center: Vec3{2, 1.5, 1}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
@@ -179,9 +169,9 @@ func main() {
 	geometry := []Geometry{sp1, sp2, sp3, sp4, sp5}
 	////////////////////////////////////*/
 	// Setup the renderer
-	light := Light{Vec3{-2.0, -3.0, 2.0}.normalize(), 1500}
-	scene := &Scene{light, []Geometry{mesh}}
-	eye := Vec3{0, 0, -4.0}
+	light := Light{Vec3{-2.0, -3.0, 2.0}.normalize(), 30}
+	scene := &Scene{light, geometry} //[]Geometry{mesh}}
+	eye := Vec3{0, 0, -6.0}
 	camera := Camera{eye, w, h, imageRes}
 	jobChan := make(chan Rect)
 	renderer := Renderer{scene, t, &camera, jobChan}
