@@ -138,7 +138,8 @@ func (renderer *Renderer) renderRect(r *Rect) {
 			// Compute primary ray direction
 			ray := renderer.cam.rayForPixel(x, y)
 			g := renderer.scene.rayTrace(ray, 0)
-			colour := color.RGBA{float2byte(g.x), float2byte(g.y), float2byte(g.z), 255}
+			g.linearToSRGB()
+			colour := color.RGBA64{ratioToColor(g.x), ratioToColor(g.y), ratioToColor(g.z), 65535}
 			renderer.img.Set(x, renderer.cam.height-(y+1), colour)
 		}
 	}
@@ -149,17 +150,6 @@ func (renderer *Renderer) worker() {
 		renderer.renderRect(&r)
 		wg.Done()
 	}
-}
-
-func float2byte(f float64) byte {
-	scaled := 0.5 + f*255.0
-	switch {
-	case scaled < 0:
-		scaled = 0
-	case scaled > 255:
-		scaled = 255
-	}
-	return byte(scaled)
 }
 
 func main() {
