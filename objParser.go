@@ -77,9 +77,8 @@ func readObjFile(file string) Mesh {
 	if err := scanner.Err(); err != nil {
 		fmt.Println(os.Stderr, "reading standard input:", err)
 	}
-	boundingBox, err := computeBoundingBox(vertexSlice)
-	if err != nil {
-		log.Fatal("Error: ", err)
-	}
-	return Mesh{triangleSlice, boundingBox}
+	fmt.Println("Building KdTree")
+	kdTree := BuildKdNode(triangleSlice, 0)
+	fmt.Println("Done")
+	return Mesh{triangleSlice, kdTree}
 }

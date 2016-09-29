@@ -49,3 +49,49 @@ func (b *Box) Intersect(r Ray) bool {
 
 	return tmax >= math.Max(0.0, tmin)
 }
+
+func (b *Box) Len() Vec3 {
+	return b.max.Sub(b.min)
+}
+
+func (b *Box) Expand(other *Box) {
+	if other.min.x < b.min.x {
+		b.min.x = other.min.x
+	}
+	if other.min.y < b.min.y {
+		b.min.y = other.min.y
+	}
+	if other.min.z < b.min.z {
+		b.min.z = other.min.z
+	}
+	if b.max.x < other.max.x {
+		b.max.x = other.max.x
+	}
+	if b.max.y < other.max.y {
+		b.max.y = other.max.y
+	}
+	if b.max.z < other.max.z {
+		b.max.z = other.max.z
+	}
+}
+
+func (b *Box) LongestAxis() int {
+	xLength := math.Abs(b.max.x - b.min.x)
+	yLength := math.Abs(b.max.y - b.min.y)
+	zLength := math.Abs(b.max.z - b.min.z)
+	if xLength > yLength && xLength > zLength {
+		return 0
+	} else if yLength > xLength && yLength > zLength {
+		return 1
+	} else {
+		return 2
+	}
+}
+
+func (b *Box) Overlaps(other *Box) bool {
+	x := b.max.x >= other.min.x && b.min.x <= other.max.x
+	y := b.max.y >= other.min.y && b.min.y <= other.max.y
+	z := b.max.z >= other.min.z && b.min.z <= other.max.z
+
+	return x && y && z
+}

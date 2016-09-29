@@ -19,10 +19,10 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
-	"log"
 	"math"
 	"os"
 	"runtime"
@@ -31,7 +31,7 @@ import (
 
 var infinity = math.Inf(1)
 var zeroVec = Vec3{0, 0, 0}
-var zeroHit = Hit{0, zeroVec, zeroVec}
+var noHit = Hit{0, zeroVec, zeroVec}
 var delta = math.Sqrt(1.0E-16)
 
 const MaxDepth = 2
@@ -163,6 +163,7 @@ func float2byte(f float64) byte {
 }
 
 func main() {
+	//defer profile.Start().Stop()
 	// Image size
 	imageRes := 256
 	w, h := imageRes, imageRes
@@ -179,7 +180,7 @@ func main() {
 	geometry := []Geometry{sp1, sp2, sp3, sp4, sp5}
 	////////////////////////////////////*/
 	// Setup the renderer
-	light := Light{Vec3{-2.0, -3.0, 2.0}.normalize(), 1500}
+	light := Light{Vec3{-2.0, -3.0, 2.0}.normalize(), 2000}
 	scene := &Scene{light, []Geometry{mesh}}
 	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
@@ -202,7 +203,7 @@ func main() {
 	wg.Wait()
 	outFile, err := os.Create("img.png")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
 	}
 	defer outFile.Close()
 	bufWriter := bufio.NewWriter(outFile)

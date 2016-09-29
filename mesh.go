@@ -19,7 +19,7 @@ package main
 
 type Mesh struct {
 	triangles []*Triangle
-	bv        BoundingVolume
+	kd        *KdNode
 }
 
 func (m Mesh) GetColor() Vec3 {
@@ -27,21 +27,9 @@ func (m Mesh) GetColor() Vec3 {
 }
 
 func (m Mesh) IntersectHit(r Ray) (bool, Hit) {
-	var pHit Hit
-	var minDistance = infinity
-	if isHit := m.bv.Intersect(r); !isHit {
-		return false, zeroHit
+	isHit, hit := m.kd.Intersect(r)
+	if isHit {
+		return true, hit
 	}
-	for _, triangle := range m.triangles {
-		if isHit, hit := triangle.IntersectHit(r); isHit {
-			if hit.distance < minDistance {
-				pHit = hit
-				minDistance = pHit.distance
-			}
-		}
-	}
-	if minDistance == infinity {
-		return false, zeroHit
-	}
-	return true, pHit
+	return false, Hit{}
 }

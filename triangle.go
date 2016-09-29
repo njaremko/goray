@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"os"
+)
+
 /*
    Copyright (C) 2016 Nathan Jaremko
 
@@ -50,6 +55,33 @@ func (s *Triangle) GetCenter() Vec3 {
 	return s.center
 }
 
+func (t *Triangle) ComputeBoundingBox() *Box {
+	box, err := computeBoundingBox([]Vec3{t.v1, t.v2, t.v3})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	return box
+}
+
+func (t *Triangle) GetMidPoint() Vec3 {
+	// Add three points of triangle and average
+	xAverage := (t.v1.x + t.v2.x + t.v3.x) / 3
+	yAverage := (t.v1.y + t.v2.y + t.v3.y) / 3
+	zAverage := (t.v1.z + t.v2.z + t.v3.z) / 3
+	return Vec3{xAverage, yAverage, zAverage}
+}
+
+func (t *Triangle) Equals(t2 *Triangle) bool {
+	if t.v1.x == t2.v1.x && t.v1.y == t2.v1.y && t.v1.z == t2.v1.z {
+		if t.v2.x == t2.v2.x && t.v2.y == t2.v2.y && t.v2.z == t2.v2.z {
+			if t.v3.x == t2.v3.x && t.v3.y == t2.v3.y && t.v3.z == t2.v3.z {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Moller-Trumbore algorithm
 func (s *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	//Find vectors for two edges sharing V1
@@ -61,7 +93,7 @@ func (s *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	det := dotProduct(e1, p)
 	//NOT CULLING
 	if det > -EPSILON && det < EPSILON {
-		return false, zeroHit
+		return false, noHit
 	}
 	inv_det := 1 / det
 	//calculate distance from V1 to ray origin
@@ -70,7 +102,7 @@ func (s *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	u := dotProduct(t, p) * inv_det
 	//The intersection lies outside of the triangle
 	if u < 0 || u > 1 {
-		return false, zeroHit
+		return false, noHit
 	}
 	//Prepare to test v parameter
 	q := crossProduct(t, e1)
@@ -78,11 +110,11 @@ func (s *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	v := dotProduct(r.dir, q) * inv_det
 	//The intersection lies outside of the triangle
 	if v < 0 || u+v > 1 {
-		return false, zeroHit
+		return false, noHit
 	}
 	x := dotProduct(e2, q) * inv_det
 	if x > EPSILON { //ray intersection
 		return true, Hit{x, r.origin.Add(r.dir.Mul(x)), crossProduct(e1, e2)}
 	}
-	return false, zeroHit
+	return false, noHit
 }
