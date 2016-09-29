@@ -8,7 +8,7 @@ Features (Toward a 1.0 release):
 - [x] Ray-Triangle intersection
 - [x] Directional lighting
 - [x] Diffuse lighting
-- [x] Bounding volume support
+- [x] kd-tree volume partitioning
 - [ ] Reflections (Almost done)
 - [ ] Refraction (Almost done)
 - [ ] Fresnel (Almost done)
