@@ -22,6 +22,7 @@ import (
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// EPSILON added to normal vector to prevent acne
 const EPSILON = 0.00001
 
 type Triangle struct {
@@ -35,24 +36,24 @@ type Triangle struct {
 	center       Vec3
 }
 
-func (s *Triangle) GetColor() Vec3 {
-	return s.color
+func (t *Triangle) GetColor() Vec3 {
+	return t.color
 }
 
-func (s *Triangle) IsTransparent() bool {
-	return s.transparency > 0
+func (t *Triangle) IsTransparent() bool {
+	return t.transparency > 0
 }
 
-func (s *Triangle) GetTransparency() float64 {
-	return s.transparency
+func (t *Triangle) GetTransparency() float64 {
+	return t.transparency
 }
 
-func (s *Triangle) GetReflection() float64 {
-	return s.reflection
+func (t *Triangle) GetReflection() float64 {
+	return t.reflection
 }
 
-func (s *Triangle) GetCenter() Vec3 {
-	return s.center
+func (t *Triangle) GetCenter() Vec3 {
+	return t.center
 }
 
 func (t *Triangle) ComputeBoundingBox() *Box {
@@ -83,38 +84,40 @@ func (t *Triangle) Equals(t2 *Triangle) bool {
 }
 
 // Moller-Trumbore algorithm
-func (s *Triangle) IntersectHit(r Ray) (bool, Hit) {
+func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	//Find vectors for two edges sharing V1
-	e1 := s.v2.Sub(s.v1)
-	e2 := s.v3.Sub(s.v1)
+	e1 := t.v2.Sub(t.v1)
+	e2 := t.v3.Sub(t.v1)
 	//Begin calculating determinant - also used to calculate u parameter
 	p := crossProduct(r.dir, e2)
 	//if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
 	det := dotProduct(e1, p)
-	//NOT CULLING
-	if det > -EPSILON && det < EPSILON {
+	// CULLING
+	if /*det > -EPSILON &&*/ det < EPSILON {
 		return false, noHit
 	}
-	inv_det := 1 / det
+	invDet := 1.0 / det
 	//calculate distance from V1 to ray origin
-	t := r.origin.Sub(s.v1)
+	s := r.origin.Sub(t.v1)
 	//Calculate u parameter and test bound
-	u := dotProduct(t, p) * inv_det
+	u := dotProduct(s, p) * invDet
 	//The intersection lies outside of the triangle
-	if u < 0 || u > 1 {
+	if u < 0.0 || u > 1.0 {
 		return false, noHit
 	}
 	//Prepare to test v parameter
-	q := crossProduct(t, e1)
+	q := crossProduct(s, e1)
 	//Calculate V parameter and test bound
-	v := dotProduct(r.dir, q) * inv_det
+	v := dotProduct(r.dir, q) * invDet
 	//The intersection lies outside of the triangle
-	if v < 0 || u+v > 1 {
+	if v < 0.0 || u+v > 1.0 {
 		return false, noHit
 	}
-	x := dotProduct(e2, q) * inv_det
+	x := dotProduct(e2, q) * invDet
 	if x > EPSILON { //ray intersection
-		return true, Hit{x, r.origin.Add(r.dir.Mul(x)), crossProduct(e1, e2)}
+		hitPoint := r.origin.Add(r.dir.Mul(x))
+		normal := hitPoint.Add(crossProduct(e1, e2).Mul(1e-8))
+		return true, Hit{x, hitPoint, normal}
 	}
 	return false, noHit
 }

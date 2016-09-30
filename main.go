@@ -162,16 +162,14 @@ func main() {
 	t := image.NewRGBA(image.Rect(0, 0, w, h))
 	// Create geometry for the scene
 	mesh := readObjFile("teapot.obj")
-	/*sp1 := &Sphere{center: Vec3{0, 0, 0}, radius: 1.0, color: Vec3{0, 0.7, 0}}
-	sp2 := &Sphere{center: Vec3{-2, -1.5, 1}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
-	sp3 := &Sphere{center: Vec3{-2, 1.5, 1}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
-	sp4 := &Sphere{center: Vec3{2, 1.5, 1}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
-	sp5 := &Sphere{center: Vec3{2, -1.5, 1}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
-	geometry := []Geometry{sp1, sp2, sp3, sp4, sp5}
-	////////////////////////////////////*/
+	sp1 := &Sphere{center: Vec3{0, 0, 5}, radius: 1.0, color: Vec3{0, 0.7, 0}}
+	sp2 := &Sphere{center: Vec3{-2, -1.5, 3}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
+	sp3 := &Sphere{center: Vec3{-2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
+	sp4 := &Sphere{center: Vec3{2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
+	sp5 := &Sphere{center: Vec3{2, -1.5, 5}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
 	// Setup the renderer
-	light := Light{Vec3{-2.0, -3.0, -2.0}.normalize(), 2000}
-	scene := &Scene{light, []Geometry{mesh}}
+	light := Light{Vec3{-1.0, -2.0, 2.0}.normalize(), 10}
+	scene := &Scene{light, []Geometry{mesh, sp1, sp2, sp3, sp4, sp5}}
 	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
 	jobChan := make(chan Rect, 10)
