@@ -22,7 +22,7 @@ import (
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-const EPSILON = 0.0001
+const EPSILON = 0.00001
 
 type Triangle struct {
 	v1           Vec3

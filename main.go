@@ -155,7 +155,7 @@ func (renderer *Renderer) worker() {
 func main() {
 	//defer profile.Start().Stop()
 	// Image size
-	imageRes := 256
+	imageRes := 512
 	w, h := imageRes, imageRes
 	// define chunk size for rendering
 	chunkSize := 16
@@ -170,14 +170,14 @@ func main() {
 	geometry := []Geometry{sp1, sp2, sp3, sp4, sp5}
 	////////////////////////////////////*/
 	// Setup the renderer
-	light := Light{Vec3{-2.0, -3.0, 2.0}.normalize(), 2000}
+	light := Light{Vec3{-2.0, -3.0, -2.0}.normalize(), 2000}
 	scene := &Scene{light, []Geometry{mesh}}
 	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
-	jobChan := make(chan Rect)
+	jobChan := make(chan Rect, 10)
 	renderer := Renderer{scene, t, &camera, jobChan}
 	///////////////////
-
+	fmt.Println("Rendering...")
 	// Create workers to render chunks
 	for i := 0; i < runtime.NumCPU()*2; i++ {
 		go renderer.worker()
