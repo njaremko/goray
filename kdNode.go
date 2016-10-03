@@ -33,23 +33,23 @@ func BuildKdNode(triangles []*Triangle, depth int) *KdNode {
 		return node
 	}
 	if len(triangles) == 1 {
-		node.bbox = *triangles[0].ComputeBoundingBox()
+		node.bbox = *triangles[0].BoundingBox()
 		node.left = &KdNode{}
 		node.right = &KdNode{}
 		return node
 	}
 
 	// Ensure our bounding box contains all triangles
-	node.bbox = *triangles[0].ComputeBoundingBox()
+	node.bbox = *triangles[0].BoundingBox()
 	for _, triangle := range node.triangles[1:] {
-		node.bbox.Expand(triangle.ComputeBoundingBox())
+		node.bbox.Expand(triangle.BoundingBox())
 	}
 
 	// Calculate the middle point of all triangles
 	midPoint := Vec3{0, 0, 0}
 	inverseLen := 1.0 / float64(len(triangles))
 	for _, triangle := range triangles {
-		midPoint = midPoint.Add(triangle.GetMidPoint().Mul(inverseLen))
+		midPoint = midPoint.Add(triangle.MidPoint().Mul(inverseLen))
 	}
 
 	// Initialize slices to be filled in next section
@@ -61,19 +61,19 @@ func BuildKdNode(triangles []*Triangle, depth int) *KdNode {
 	for _, triangle := range triangles {
 		switch axis {
 		case 0:
-			if midPoint.x >= triangle.GetMidPoint().x {
+			if midPoint.x >= triangle.MidPoint().x {
 				rightTriangles = append(rightTriangles, triangle)
 			} else {
 				leftTriangles = append(leftTriangles, triangle)
 			}
 		case 1:
-			if midPoint.y >= triangle.GetMidPoint().y {
+			if midPoint.y >= triangle.MidPoint().y {
 				rightTriangles = append(rightTriangles, triangle)
 			} else {
 				leftTriangles = append(leftTriangles, triangle)
 			}
 		case 2:
-			if midPoint.z >= triangle.GetMidPoint().z {
+			if midPoint.z >= triangle.MidPoint().z {
 				rightTriangles = append(rightTriangles, triangle)
 			} else {
 				leftTriangles = append(leftTriangles, triangle)

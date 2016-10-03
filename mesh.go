@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 /*
    Copyright (C) 2016 Nathan Jaremko
 
@@ -20,6 +22,13 @@ package main
 type Mesh struct {
 	triangles []*Triangle
 	kd        *KdNode
+}
+
+func NewMesh(triangles []*Triangle) *Mesh {
+	fmt.Println("Building KdTree")
+	kdTree := BuildKdNode(triangles, 0)
+	fmt.Println("Done")
+	return &Mesh{triangles, kdTree}
 }
 
 func (m Mesh) GetColor() Vec3 {

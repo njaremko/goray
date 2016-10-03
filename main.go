@@ -21,12 +21,13 @@ import (
 	"bufio"
 	"fmt"
 	"image"
-	"image/color"
 	"image/png"
 	"math"
 	"os"
 	"runtime"
 	"sync"
+
+	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
 var infinity = math.Inf(1)
@@ -59,97 +60,11 @@ type Geometry interface {
 	GetColor() Vec3
 }
 
-type Scene struct {
-	light    Light
-	geometry []Geometry
-}
-
-type Light struct {
-	direction Vec3
-	intensity float64
-}
-
-func (s *Scene) rayTrace(ray Ray, depth int) Vec3 {
-	var pHit Hit
-	var minDistance = infinity
-	var closestObject Geometry
-	// Search for ray intersection in scene
-	for _, object := range s.geometry {
-		// Test if the ray hits any scene geometry
-		if isHit, hit := object.IntersectHit(ray); isHit {
-			// Ensure we draw the closest item
-			if hit.distance < minDistance {
-				pHit = hit
-				closestObject = object
-				minDistance = pHit.distance
-			}
-		}
-	}
-	// If the ray misses
-	if closestObject == nil {
-		return backgroundColor
-	}
-
-	light := s.light.direction.Mul(-1)
-	shadowRay := Ray{pHit.point.Add(pHit.normal.Mul(delta)), light}
-	for _, object := range s.geometry {
-		if isHit, _ := object.IntersectHit(shadowRay); isHit {
-			return zeroVec
-		}
-	}
-	// How much light is reflected
-	albedo := 0.18
-	normalLightProduct := math.Abs(dotProduct(pHit.normal, light))
-	diffColor := albedo / math.Pi * s.light.intensity * math.Max(0, normalLightProduct)
-	return closestObject.GetColor().Mul(diffColor)
-
-}
-
 type Rect struct {
 	left   int
 	right  int
 	top    int
 	bottom int
-}
-
-type Camera struct {
-	eye    Vec3
-	width  int
-	height int
-	depth  int
-}
-
-func (c *Camera) rayForPixel(x int, y int) Ray {
-	dir := Vec3{float64(x) - float64(c.width)*0.5, float64(y) - float64(c.height)*0.5,
-		float64(c.depth)}.normalize()
-	return Ray{c.eye, dir}
-}
-
-type Renderer struct {
-	scene   *Scene
-	img     *image.RGBA
-	cam     *Camera
-	jobChan chan Rect
-}
-
-func (renderer *Renderer) renderRect(r *Rect) {
-	for y := r.top; y < r.bottom; y++ {
-		for x := r.left; x < r.right; x++ {
-			// Compute primary ray direction
-			ray := renderer.cam.rayForPixel(x, y)
-			g := renderer.scene.rayTrace(ray, 0)
-			g.linearToSRGB()
-			colour := color.RGBA64{ratioToColor(g.x), ratioToColor(g.y), ratioToColor(g.z), 65535}
-			renderer.img.Set(x, renderer.cam.height-(y+1), colour)
-		}
-	}
-}
-
-func (renderer *Renderer) worker() {
-	for r := range renderer.jobChan {
-		renderer.renderRect(&r)
-		wg.Done()
-	}
 }
 
 func main() {
@@ -161,24 +76,30 @@ func main() {
 	chunkSize := 16
 	t := image.NewRGBA(image.Rect(0, 0, w, h))
 	// Create geometry for the scene
-	mesh := readObjFile("teapot.obj")
-	sp1 := &Sphere{center: Vec3{0, 0, 5}, radius: 1.0, color: Vec3{0, 0.7, 0}}
-	sp2 := &Sphere{center: Vec3{-2, -1.5, 3}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
-	sp3 := &Sphere{center: Vec3{-2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
-	sp4 := &Sphere{center: Vec3{2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
-	sp5 := &Sphere{center: Vec3{2, -1.5, 5}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
+	mesh, err := LoadOBJ("teapot.obj")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	/*
+		sp1 := &Sphere{center: Vec3{0, 0, 5}, radius: 1.0, color: Vec3{0, 0.7, 0}}
+		sp2 := &Sphere{center: Vec3{-2, -1.5, 3}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
+		sp3 := &Sphere{center: Vec3{-2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
+		sp4 := &Sphere{center: Vec3{2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
+		sp5 := &Sphere{center: Vec3{2, -1.5, 5}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
+	*/
 	// Setup the renderer
-	light := Light{Vec3{-1.0, -2.0, 2.0}.normalize(), 10}
-	scene := &Scene{light, []Geometry{mesh, sp1, sp2, sp3, sp4, sp5}}
+	light := Light{Vec3{-1.0, -2.0, 2.0}.normalize(), 2000}
+	scene := &Scene{light, []Geometry{mesh}} //, sp1, sp2, sp3, sp4, sp5}}
 	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
 	jobChan := make(chan Rect, 10)
 	renderer := Renderer{scene, t, &camera, jobChan}
 	///////////////////
 	fmt.Println("Rendering...")
+	bar := pb.StartNew((imageRes / chunkSize) * (imageRes / chunkSize))
 	// Create workers to render chunks
 	for i := 0; i < runtime.NumCPU()*2; i++ {
-		go renderer.worker()
+		go renderer.worker(bar)
 	}
 	// Send chunks to workers
 	for y := 0; y < h; y += chunkSize {
@@ -189,6 +110,7 @@ func main() {
 	}
 	// Wait for all jobs to finish
 	wg.Wait()
+	bar.FinishPrint("Done")
 	outFile, err := os.Create("img.png")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

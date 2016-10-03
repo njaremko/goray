@@ -101,6 +101,10 @@ func (v Vec3) Distance(v2 Vec3) float64 {
 	return math.Sqrt(dot)
 }
 
+func (v Vec3) Equals(v2 Vec3) bool {
+	return v.x == v2.x && v.y == v2.y && v.z == v2.z
+}
+
 func (v Vec3) Magnitude() float64 {
 	return math.Sqrt(dotProduct(v, v))
 }

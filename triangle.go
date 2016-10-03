@@ -26,10 +26,9 @@ import (
 const EPSILON = 0.00001
 
 type Triangle struct {
-	v1           Vec3
-	v2           Vec3
-	v3           Vec3
-	normal       Vec3
+	V1, V2, V3   Vec3
+	N1, N2, N3   Vec3
+	T1, T2, T3   Vec3
 	color        Vec3
 	transparency float64
 	reflection   float64
@@ -56,29 +55,44 @@ func (t *Triangle) GetCenter() Vec3 {
 	return t.center
 }
 
-func (t *Triangle) ComputeBoundingBox() *Box {
-	box, err := computeBoundingBox([]Vec3{t.v1, t.v2, t.v3})
+func (t *Triangle) BoundingBox() *Box {
+	box, err := computeBoundingBox([]Vec3{t.V1, t.V2, t.V3})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
 	return box
 }
 
-func (t *Triangle) GetMidPoint() Vec3 {
+func (t *Triangle) MidPoint() Vec3 {
 	// Add three points of triangle and average
-	xAverage := (t.v1.x + t.v2.x + t.v3.x) / 3
-	yAverage := (t.v1.y + t.v2.y + t.v3.y) / 3
-	zAverage := (t.v1.z + t.v2.z + t.v3.z) / 3
+	xAverage := (t.V1.x + t.V2.x + t.V3.x) / 3
+	yAverage := (t.V1.y + t.V2.y + t.V3.y) / 3
+	zAverage := (t.V1.z + t.V2.z + t.V3.z) / 3
 	return Vec3{xAverage, yAverage, zAverage}
 }
 
+func (t *Triangle) Normal() Vec3 {
+	e1 := t.V2.Sub(t.V1)
+	e2 := t.V3.Sub(t.V1)
+	return crossProduct(e1, e2).normalize()
+}
+
+func (t *Triangle) FixNormals() {
+	n := t.Normal()
+	zero := Vec3{}
+	if t.N1 == zero {
+		t.N1 = n
+	}
+	if t.N2 == zero {
+		t.N2 = n
+	}
+	if t.N3 == zero {
+		t.N3 = n
+	}
+}
 func (t *Triangle) Equals(t2 *Triangle) bool {
-	if t.v1.x == t2.v1.x && t.v1.y == t2.v1.y && t.v1.z == t2.v1.z {
-		if t.v2.x == t2.v2.x && t.v2.y == t2.v2.y && t.v2.z == t2.v2.z {
-			if t.v3.x == t2.v3.x && t.v3.y == t2.v3.y && t.v3.z == t2.v3.z {
-				return true
-			}
-		}
+	if t.V1.Equals(t2.V1) && t.V2.Equals(t2.V2) && t.V3.Equals(t2.V3) {
+		return true
 	}
 	return false
 }
@@ -86,8 +100,8 @@ func (t *Triangle) Equals(t2 *Triangle) bool {
 // Moller-Trumbore algorithm
 func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	//Find vectors for two edges sharing V1
-	e1 := t.v2.Sub(t.v1)
-	e2 := t.v3.Sub(t.v1)
+	e1 := t.V2.Sub(t.V1)
+	e2 := t.V3.Sub(t.V1)
 	//Begin calculating determinant - also used to calculate u parameter
 	p := crossProduct(r.dir, e2)
 	//if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
@@ -98,7 +112,7 @@ func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	}
 	invDet := 1.0 / det
 	//calculate distance from V1 to ray origin
-	s := r.origin.Sub(t.v1)
+	s := r.origin.Sub(t.V1)
 	//Calculate u parameter and test bound
 	u := dotProduct(s, p) * invDet
 	//The intersection lies outside of the triangle
@@ -116,7 +130,7 @@ func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	x := dotProduct(e2, q) * invDet
 	if x > EPSILON { //ray intersection
 		hitPoint := r.origin.Add(r.dir.Mul(x))
-		normal := hitPoint.Add(crossProduct(e1, e2).Mul(1e-8))
+		normal := crossProduct(e1, e2)
 		return true, Hit{x, hitPoint, normal}
 	}
 	return false, noHit
