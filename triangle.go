@@ -65,16 +65,16 @@ func (t *Triangle) BoundingBox() *Box {
 
 func (t *Triangle) MidPoint() Vec3 {
 	// Add three points of triangle and average
-	xAverage := (t.V1.x + t.V2.x + t.V3.x) / 3
-	yAverage := (t.V1.y + t.V2.y + t.V3.y) / 3
-	zAverage := (t.V1.z + t.V2.z + t.V3.z) / 3
+	xAverage := (t.V1.X + t.V2.X + t.V3.X) / 3
+	yAverage := (t.V1.Y + t.V2.Y + t.V3.Y) / 3
+	zAverage := (t.V1.Z + t.V2.Z + t.V3.Z) / 3
 	return Vec3{xAverage, yAverage, zAverage}
 }
 
 func (t *Triangle) Normal() Vec3 {
 	e1 := t.V2.Sub(t.V1)
 	e2 := t.V3.Sub(t.V1)
-	return crossProduct(e1, e2).normalize()
+	return crossProduct(e1, e2).Normalize()
 }
 
 func (t *Triangle) FixNormals() {
@@ -103,35 +103,35 @@ func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	e1 := t.V2.Sub(t.V1)
 	e2 := t.V3.Sub(t.V1)
 	//Begin calculating determinant - also used to calculate u parameter
-	p := crossProduct(r.dir, e2)
+	p := crossProduct(r.Direction, e2)
 	//if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
 	det := dotProduct(e1, p)
 	// CULLING
 	if /*det > -EPSILON &&*/ det < EPSILON {
-		return false, noHit
+		return false, NoHit
 	}
 	invDet := 1.0 / det
 	//calculate distance from V1 to ray origin
-	s := r.origin.Sub(t.V1)
+	s := r.Origin.Sub(t.V1)
 	//Calculate u parameter and test bound
 	u := dotProduct(s, p) * invDet
 	//The intersection lies outside of the triangle
 	if u < 0.0 || u > 1.0 {
-		return false, noHit
+		return false, NoHit
 	}
 	//Prepare to test v parameter
 	q := crossProduct(s, e1)
 	//Calculate V parameter and test bound
-	v := dotProduct(r.dir, q) * invDet
+	v := dotProduct(r.Direction, q) * invDet
 	//The intersection lies outside of the triangle
 	if v < 0.0 || u+v > 1.0 {
-		return false, noHit
+		return false, NoHit
 	}
 	x := dotProduct(e2, q) * invDet
 	if x > EPSILON { //ray intersection
-		hitPoint := r.origin.Add(r.dir.Mul(x))
+		hitPoint := r.Origin.Add(r.Direction.Mul(x))
 		normal := crossProduct(e1, e2)
 		return true, Hit{x, hitPoint, normal}
 	}
-	return false, noHit
+	return false, NoHit
 }

@@ -46,23 +46,23 @@ func computeBoundingBox(vertSlice []Vec3) (*Box, error) {
 	}
 	min, max := vertSlice[0], vertSlice[0]
 	for _, vert := range vertSlice[1:] {
-		if vert.x < min.x {
-			min.x = vert.x
+		if vert.X < min.X {
+			min.X = vert.X
 		}
-		if vert.y < min.y {
-			min.y = vert.y
+		if vert.Y < min.Y {
+			min.Y = vert.Y
 		}
-		if vert.z < min.z {
-			min.z = vert.z
+		if vert.Z < min.Z {
+			min.Z = vert.Z
 		}
-		if vert.x > max.x {
-			max.x = vert.x
+		if vert.X > max.X {
+			max.X = vert.X
 		}
-		if vert.y > max.y {
-			max.y = vert.y
+		if vert.Y > max.Y {
+			max.Y = vert.Y
 		}
-		if vert.z > max.z {
-			max.z = vert.z
+		if vert.Z > max.Z {
+			max.Z = vert.Z
 		}
 	}
 	return &Box{min, max}, nil

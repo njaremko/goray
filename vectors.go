@@ -23,38 +23,38 @@ import (
 
 // Vec3 is a representation of a 3 dimentional vector
 type Vec3 struct {
-	x, y, z float64
+	X, Y, Z float64
 }
 
 func (v Vec3) Add(vectors ...Vec3) Vec3 {
 	for _, vector := range vectors {
-		v.x += vector.x
-		v.y += vector.y
-		v.z += vector.z
+		v.X += vector.X
+		v.Y += vector.Y
+		v.Z += vector.Z
 	}
 	return v
 }
 
 func (v Vec3) Sub(vectors ...Vec3) Vec3 {
 	for _, vector := range vectors {
-		v.x -= vector.x
-		v.y -= vector.y
-		v.z -= vector.z
+		v.X -= vector.X
+		v.Y -= vector.Y
+		v.Z -= vector.Z
 	}
 	return v
 }
 
 func (v Vec3) Mul(x float64) Vec3 {
-	v.x *= x
-	v.y *= x
-	v.z *= x
+	v.X *= x
+	v.Y *= x
+	v.Z *= x
 	return v
 }
 
 func (v Vec3) MulVec(v2 Vec3) Vec3 {
-	v.x *= v2.x
-	v.y *= v2.y
-	v.z *= v2.z
+	v.X *= v2.X
+	v.Y *= v2.Y
+	v.Z *= v2.Z
 	return v
 }
 
@@ -89,9 +89,9 @@ func (v Vec3) Refract(n Vec3, ior float64) Vec3 {
 }
 
 func (v Vec3) Inverse() Vec3 {
-	v.x = 1 / v.x
-	v.y = 1 / v.y
-	v.z = 1 / v.z
+	v.X = 1 / v.X
+	v.Y = 1 / v.Y
+	v.Z = 1 / v.Z
 	return v
 }
 
@@ -102,21 +102,21 @@ func (v Vec3) Distance(v2 Vec3) float64 {
 }
 
 func (v Vec3) Equals(v2 Vec3) bool {
-	return v.x == v2.x && v.y == v2.y && v.z == v2.z
+	return v.X == v2.X && v.Y == v2.Y && v.Z == v2.Z
 }
 
 func (v Vec3) Magnitude() float64 {
 	return math.Sqrt(dotProduct(v, v))
 }
 
-func (v Vec3) normalize() Vec3 {
+func (v Vec3) Normalize() Vec3 {
 	return v.Mul(1 / math.Sqrt(dotProduct(v, v)))
 }
 
 func dotProduct(a, b Vec3) float64 {
-	return a.x*b.x + a.y*b.y + a.z*b.z
+	return a.X*b.X + a.Y*b.Y + a.Z*b.Z
 }
 
 func crossProduct(a, b Vec3) Vec3 {
-	return Vec3{a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x}
+	return Vec3{a.Y*b.Z - a.Z*b.Y, a.Z*b.X - a.X*b.Z, a.X*b.Y - a.Y*b.X}
 }

@@ -44,25 +44,25 @@ func gammaToLinear(f float64) float64 {
 }
 
 func (v *Vec3) sRGBToLinear() {
-	v.x = sRGBToLinear(v.x)
-	v.y = sRGBToLinear(v.y)
-	v.z = sRGBToLinear(v.z)
+	v.X = sRGBToLinear(v.X)
+	v.Y = sRGBToLinear(v.Y)
+	v.Z = sRGBToLinear(v.Z)
 }
 
 func (v *Vec3) linearToSRGB() {
-	v.x = linearToSRGB(v.x)
-	v.y = linearToSRGB(v.y)
-	v.z = linearToSRGB(v.z)
+	v.X = linearToSRGB(v.X)
+	v.Y = linearToSRGB(v.Y)
+	v.Z = linearToSRGB(v.Z)
 }
 
 func (v *Vec3) linearToGamma() {
-	v.x = linearToGamma(v.x)
-	v.y = linearToGamma(v.y)
-	v.z = linearToGamma(v.z)
+	v.X = linearToGamma(v.X)
+	v.Y = linearToGamma(v.Y)
+	v.Z = linearToGamma(v.Z)
 }
 
 func (v *Vec3) gammaToLinear() {
-	v.x = gammaToLinear(v.x)
-	v.y = gammaToLinear(v.y)
-	v.z = gammaToLinear(v.z)
+	v.X = gammaToLinear(v.X)
+	v.Y = gammaToLinear(v.Y)
+	v.Z = gammaToLinear(v.Z)
 }

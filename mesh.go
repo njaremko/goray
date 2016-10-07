@@ -21,12 +21,12 @@ import "fmt"
 
 type Mesh struct {
 	triangles []*Triangle
-	kd        *KdNode
+	kd        *KdTree
 }
 
 func NewMesh(triangles []*Triangle) *Mesh {
-	fmt.Println("Building KdTree")
-	kdTree := BuildKdNode(triangles, 0)
+	fmt.Printf("Building k-d tree... ")
+	kdTree := BuildTree(triangles)
 	fmt.Println("Done")
 	return &Mesh{triangles, kdTree}
 }
@@ -35,10 +35,10 @@ func (m Mesh) GetColor() Vec3 {
 	return Vec3{0.1, 0.7, 0.9}
 }
 
-func (m Mesh) IntersectHit(r Ray) (bool, Hit) {
-	isHit, hit := m.kd.Intersect(r)
-	if isHit {
-		return true, hit
+func (m Mesh) IntersectHit(r Ray) Hit {
+	hit := m.kd.Intersect(r)
+	if hit.IsHit() {
+		return hit
 	}
-	return false, Hit{}
+	return NoHit
 }

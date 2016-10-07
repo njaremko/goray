@@ -50,8 +50,8 @@ func (s *Sphere) GetCenter() Vec3 {
 }
 
 func (s *Sphere) Intersect(r Ray) bool {
-	distance := r.origin.Sub(s.center)
-	b := dotProduct(distance, r.dir)
+	distance := r.Origin.Sub(s.center)
+	b := dotProduct(distance, r.Direction)
 	c := dotProduct(distance, distance) - s.radius*s.radius
 
 	if c > 0 && b > 0 {
@@ -73,19 +73,19 @@ func (s *Sphere) Intersect(r Ray) bool {
 	return true
 }
 
-func (s *Sphere) IntersectHit(r Ray) (bool, Hit) {
-	distance := r.origin.Sub(s.center)
-	b := dotProduct(distance, r.dir)
+func (s *Sphere) IntersectHit(r Ray) Hit {
+	distance := r.Origin.Sub(s.center)
+	b := dotProduct(distance, r.Direction)
 	c := dotProduct(distance, distance) - s.radius*s.radius
 
 	if c > 0 && b > 0 {
-		return false, Hit{infinity, zeroVec, zeroVec}
+		return NoHit
 	}
 
 	discr := b*b - c
 
 	if discr < 0 {
-		return false, Hit{infinity, zeroVec, zeroVec}
+		return NoHit
 	}
 
 	t := -b - math.Sqrt(discr)
@@ -94,32 +94,7 @@ func (s *Sphere) IntersectHit(r Ray) (bool, Hit) {
 		t = 0
 	}
 
-	interSection := r.origin.Add(r.dir.Mul(t))
-	n := interSection.Sub(s.center).normalize()
-	return true, Hit{t, interSection, n}
-
-	/*distance := r.origin.Sub(s.center)
-	radiusSquared := s.radius * s.radius
-	b := 2 * dotProduct(r.dir, distance)
-	c := dotProduct(distance, distance) - radiusSquared
-	discriminant := b*b - 4*c
-	// No intersection
-	if discriminant < 0.0 {
-		return false, Hit{infinity, zeroVec, zeroVec}
-	}
-	d := math.Sqrt(discriminant)
-
-	t0 := (-1 * b) - d
-	t1 := (-1 * b) + d
-	t := math.Min(t0, t1)
-	t /= 2
-	if t < 0 {
-		return false, Hit{0, zeroVec, zeroVec}
-	}
-	intersectionPoint := r.origin.Add(r.dir.Mul(t))
-	normal := intersectionPoint.Sub(s.center).normalize()
-	solution1 := Hit{t, intersectionPoint, normal}
-	return true, solution1
-	*/
-
+	intersection := r.Origin.Add(r.Direction.Mul(t))
+	n := intersection.Sub(s.center).Normalize()
+	return Hit{t, intersection, n}
 }

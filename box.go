@@ -26,28 +26,43 @@ type Box struct {
 	max Vec3
 }
 
-func (b *Box) Intersect(r Ray) bool {
-	inverseDir := r.dir.Inverse()
+func (b *Box) Partition(axis Axis, point float64) (left, right bool) {
+	switch axis {
+	case AxisX:
+		left = b.min.X <= point
+		right = b.max.X >= point
+	case AxisY:
+		left = b.min.Y <= point
+		right = b.max.Y >= point
+	case AxisZ:
+		left = b.min.Z <= point
+		right = b.max.Z >= point
+	}
+	return
+}
 
-	tx1 := (b.min.x - r.origin.x) * inverseDir.x
-	tx2 := (b.max.x - r.origin.x) * inverseDir.x
+func (b *Box) Intersect(r Ray) (float64, float64) {
+	inverseDir := r.Direction.Inverse()
+
+	tx1 := (b.min.X - r.Origin.X) * inverseDir.X
+	tx2 := (b.max.X - r.Origin.X) * inverseDir.X
 
 	tmin := math.Min(tx1, tx2)
 	tmax := math.Max(tx1, tx2)
 
-	ty1 := (b.min.y - r.origin.y) * inverseDir.y
-	ty2 := (b.max.y - r.origin.y) * inverseDir.y
+	ty1 := (b.min.Y - r.Origin.Y) * inverseDir.Y
+	ty2 := (b.max.Y - r.Origin.Y) * inverseDir.Y
 
 	tmin = math.Max(tmin, math.Min(ty1, ty2))
 	tmax = math.Min(tmax, math.Max(ty1, ty2))
 
-	tz1 := (b.min.z - r.origin.z) * inverseDir.z
-	tz2 := (b.max.z - r.origin.z) * inverseDir.z
+	tz1 := (b.min.Z - r.Origin.Z) * inverseDir.Z
+	tz2 := (b.max.Z - r.Origin.Z) * inverseDir.Z
 
 	tmin = math.Max(tmin, math.Min(tz1, tz2))
 	tmax = math.Min(tmax, math.Max(tz1, tz2))
 
-	return tmax >= math.Max(0.0, tmin)
+	return math.Max(0.0, tmin), tmax
 }
 
 func (b *Box) Len() Vec3 {
@@ -55,30 +70,30 @@ func (b *Box) Len() Vec3 {
 }
 
 func (b *Box) Expand(other *Box) {
-	if other.min.x < b.min.x {
-		b.min.x = other.min.x
+	if other.min.X < b.min.X {
+		b.min.X = other.min.X
 	}
-	if other.min.y < b.min.y {
-		b.min.y = other.min.y
+	if other.min.Y < b.min.Y {
+		b.min.Y = other.min.Y
 	}
-	if other.min.z < b.min.z {
-		b.min.z = other.min.z
+	if other.min.Z < b.min.Z {
+		b.min.Z = other.min.Z
 	}
-	if b.max.x < other.max.x {
-		b.max.x = other.max.x
+	if b.max.X < other.max.X {
+		b.max.X = other.max.X
 	}
-	if b.max.y < other.max.y {
-		b.max.y = other.max.y
+	if b.max.Y < other.max.Y {
+		b.max.Y = other.max.Y
 	}
-	if b.max.z < other.max.z {
-		b.max.z = other.max.z
+	if b.max.Z < other.max.Z {
+		b.max.Z = other.max.Z
 	}
 }
 
 func (b *Box) LongestAxis() int {
-	xLength := math.Abs(b.max.x - b.min.x)
-	yLength := math.Abs(b.max.y - b.min.y)
-	zLength := math.Abs(b.max.z - b.min.z)
+	xLength := math.Abs(b.max.X - b.min.X)
+	yLength := math.Abs(b.max.Y - b.min.Y)
+	zLength := math.Abs(b.max.Z - b.min.Z)
 	if xLength > yLength && xLength > zLength {
 		return 0
 	} else if yLength > xLength && yLength > zLength {
@@ -89,9 +104,9 @@ func (b *Box) LongestAxis() int {
 }
 
 func (b *Box) Overlaps(other *Box) bool {
-	x := b.max.x >= other.min.x && b.min.x <= other.max.x
-	y := b.max.y >= other.min.y && b.min.y <= other.max.y
-	z := b.max.z >= other.min.z && b.min.z <= other.max.z
+	x := b.max.X >= other.min.X && b.min.X <= other.max.X
+	y := b.max.Y >= other.min.Y && b.min.Y <= other.max.Y
+	z := b.max.Z >= other.min.Z && b.min.Z <= other.max.Z
 
 	return x && y && z
 }

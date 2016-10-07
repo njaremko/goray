@@ -32,7 +32,6 @@ import (
 
 var infinity = math.Inf(1)
 var zeroVec = Vec3{0, 0, 0}
-var noHit = Hit{0, zeroVec, zeroVec}
 var delta = math.Sqrt(1.0E-16)
 
 const MaxDepth = 2
@@ -41,14 +40,8 @@ var wg sync.WaitGroup
 
 var backgroundColor = Vec3{0.1, 0.1, 0.1}
 
-type Hit struct {
-	distance float64
-	point    Vec3
-	normal   Vec3
-}
-
 type Ray struct {
-	origin, dir Vec3
+	Origin, Direction Vec3
 }
 
 type BoundingVolume interface {
@@ -56,7 +49,7 @@ type BoundingVolume interface {
 }
 
 type Geometry interface {
-	IntersectHit(r Ray) (bool, Hit)
+	IntersectHit(r Ray) Hit
 	GetColor() Vec3
 }
 
@@ -70,7 +63,7 @@ type Rect struct {
 func main() {
 	//defer profile.Start().Stop()
 	// Image size
-	imageRes := 512
+	imageRes := 256
 	w, h := imageRes, imageRes
 	// define chunk size for rendering
 	chunkSize := 16
@@ -80,16 +73,17 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
-	/*
-		sp1 := &Sphere{center: Vec3{0, 0, 5}, radius: 1.0, color: Vec3{0, 0.7, 0}}
-		sp2 := &Sphere{center: Vec3{-2, -1.5, 3}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
-		sp3 := &Sphere{center: Vec3{-2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
-		sp4 := &Sphere{center: Vec3{2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
-		sp5 := &Sphere{center: Vec3{2, -1.5, 5}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
-	*/
+
+	sp1 := &Sphere{center: Vec3{0, 0, 5}, radius: 1.0, color: Vec3{0, 0.7, 0}}
+	sp2 := &Sphere{center: Vec3{-2, -1.5, 3}, radius: 1.0, color: Vec3{0.1, 0.9, .7}}
+	sp3 := &Sphere{center: Vec3{-2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.9, .1}}
+	sp4 := &Sphere{center: Vec3{2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
+	sp5 := &Sphere{center: Vec3{2, -1.5, 5}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
+
+	plane := &Plane{Point: Vec3{0, -3, 0}, Normal: Vec3{0, -1, 0}, Color: Vec3{0.9, 0.1, 0.9}}
 	// Setup the renderer
-	light := Light{Vec3{-1.0, -2.0, 2.0}.normalize(), 2000}
-	scene := &Scene{light, []Geometry{mesh}} //, sp1, sp2, sp3, sp4, sp5}}
+	light := Light{Vec3{-1.0, -2.0, 2.0}.Normalize(), 20}
+	scene := &Scene{light, []Geometry{mesh, sp1, sp2, sp3, sp4, sp5, plane}}
 	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
 	jobChan := make(chan Rect, 10)
@@ -110,8 +104,11 @@ func main() {
 	}
 	// Wait for all jobs to finish
 	wg.Wait()
-	bar.FinishPrint("Done")
-	outFile, err := os.Create("img.png")
+	bar.FinishPrint("")
+	outputPath := "img.png"
+	fmt.Printf("Writing output to: %s ... ", outputPath)
+	defer fmt.Println("Done")
+	outFile, err := os.Create(outputPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
