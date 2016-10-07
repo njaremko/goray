@@ -63,7 +63,7 @@ type Rect struct {
 func main() {
 	//defer profile.Start().Stop()
 	// Image size
-	imageRes := 256
+	imageRes := 512
 	w, h := imageRes, imageRes
 	// define chunk size for rendering
 	chunkSize := 16
@@ -80,10 +80,9 @@ func main() {
 	sp4 := &Sphere{center: Vec3{2, 1.5, 5}, radius: 1.0, color: Vec3{0.9, 0.1, .9}}
 	sp5 := &Sphere{center: Vec3{2, -1.5, 5}, radius: 1.0, color: Vec3{0.2, 0.4, .6}}
 
-	plane := &Plane{Point: Vec3{0, -3, 0}, Normal: Vec3{0, -1, 0}, Color: Vec3{0.9, 0.1, 0.9}}
 	// Setup the renderer
 	light := Light{Vec3{-1.0, -2.0, 2.0}.Normalize(), 20}
-	scene := &Scene{light, []Geometry{mesh, sp1, sp2, sp3, sp4, sp5, plane}}
+	scene := &Scene{light, []Geometry{mesh, sp1, sp2, sp3, sp4, sp5}}
 	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
 	jobChan := make(chan Rect, 10)

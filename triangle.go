@@ -28,6 +28,7 @@ const EPSILON = 0.00001
 type Triangle struct {
 	V1, V2, V3   Vec3
 	N1, N2, N3   Vec3
+	Normal       Vec3
 	T1, T2, T3   Vec3
 	color        Vec3
 	transparency float64
@@ -71,14 +72,14 @@ func (t *Triangle) MidPoint() Vec3 {
 	return Vec3{xAverage, yAverage, zAverage}
 }
 
-func (t *Triangle) Normal() Vec3 {
+func (t *Triangle) ComputeNormal() Vec3 {
 	e1 := t.V2.Sub(t.V1)
 	e2 := t.V3.Sub(t.V1)
 	return crossProduct(e1, e2).Normalize()
 }
 
 func (t *Triangle) FixNormals() {
-	n := t.Normal()
+	n := t.ComputeNormal()
 	zero := Vec3{}
 	if t.N1 == zero {
 		t.N1 = n
@@ -99,6 +100,7 @@ func (t *Triangle) Equals(t2 *Triangle) bool {
 
 // Moller-Trumbore algorithm
 func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
+
 	//Find vectors for two edges sharing V1
 	e1 := t.V2.Sub(t.V1)
 	e2 := t.V3.Sub(t.V1)
@@ -130,8 +132,35 @@ func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	x := dotProduct(e2, q) * invDet
 	if x > EPSILON { //ray intersection
 		hitPoint := r.Origin.Add(r.Direction.Mul(x))
-		normal := crossProduct(e1, e2)
-		return true, Hit{x, hitPoint, normal}
+		//		normal := crossProduct(e1, e2)
+		return true, Hit{x, hitPoint, t.NormalAt(hitPoint)}
 	}
 	return false, NoHit
+
+}
+
+func (t *Triangle) Barycentric(p Vec3) (u, v, w float64) {
+	v0 := t.V2.Sub(t.V1)
+	v1 := t.V3.Sub(t.V1)
+	v2 := p.Sub(t.V1)
+	d00 := dotProduct(v0, v0)
+	d01 := dotProduct(v0, v1)
+	d11 := dotProduct(v1, v1)
+	d20 := dotProduct(v2, v0)
+	d21 := dotProduct(v2, v1)
+	d := d00*d11 - d01*d01
+	v = (d11*d20 - d01*d21) / d
+	w = (d00*d21 - d01*d20) / d
+	u = 1 - v - w
+	return
+}
+
+func (t *Triangle) NormalAt(p Vec3) Vec3 {
+	u, v, w := t.Barycentric(p)
+	n := Vec3{}
+	n = n.Add(t.N1.Mul(u))
+	n = n.Add(t.N2.Mul(v))
+	n = n.Add(t.N3.Mul(w))
+	n = n.Normalize()
+	return n
 }
