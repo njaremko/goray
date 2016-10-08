@@ -17,32 +17,11 @@ package main
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import (
-	"errors"
-	"math"
-)
-
-func computeBoundingSphere(vertSlice []Vec3) *Sphere {
-	var avgPos Vec3
-	maxSqDist := 0.0
-	inverseNumVerts := 1.0 / float64(len(vertSlice))
-	for _, vert := range vertSlice {
-		avgPos.Add(vert.Mul(inverseNumVerts))
-	}
-
-	for _, vert := range vertSlice {
-		diff := avgPos.Sub(vert)
-		sqDist := dotProduct(diff, diff)
-		if sqDist > maxSqDist {
-			maxSqDist = sqDist
-		}
-	}
-	return &Sphere{center: avgPos, radius: math.Sqrt(maxSqDist)}
-}
+import "errors"
 
 func computeBoundingBox(vertSlice []Vec3) (*Box, error) {
 	if len(vertSlice) < 2 {
-		return nil, errors.New("vertSlice is too small to compute bounding box.")
+		return nil, errors.New("vertSlice is too small to compute bounding box")
 	}
 	min, max := vertSlice[0], vertSlice[0]
 	for _, vert := range vertSlice[1:] {

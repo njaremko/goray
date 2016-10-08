@@ -30,11 +30,13 @@ import (
 	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
+// EPSILON added to normal vector to prevent acne
+const EPSILON = 0.00001
+const MaxDepth = 2
+
 var infinity = math.Inf(1)
 var zeroVec = Vec3{0, 0, 0}
 var delta = math.Sqrt(1.0E-16)
-
-const MaxDepth = 2
 
 var wg sync.WaitGroup
 
@@ -50,7 +52,7 @@ type BoundingVolume interface {
 
 type Geometry interface {
 	IntersectHit(r Ray) Hit
-	GetColor() Vec3
+	Color() Vec3
 }
 
 type Rect struct {
@@ -69,7 +71,7 @@ func main() {
 	chunkSize := 16
 	t := image.NewRGBA(image.Rect(0, 0, w, h))
 	// Create geometry for the scene
-	mesh, err := LoadOBJ("teapot.obj")
+	mesh, err := OpenOBJ("teapot.obj")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
@@ -111,8 +113,19 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
-	defer outFile.Close()
+	defer func() {
+		if err := outFile.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}()
 	bufWriter := bufio.NewWriter(outFile)
-	defer bufWriter.Flush()
-	png.Encode(bufWriter, renderer.img)
+	defer func() {
+		if err := bufWriter.Flush(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}()
+	err = png.Encode(bufWriter, renderer.img)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }

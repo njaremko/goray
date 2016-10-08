@@ -5,39 +5,47 @@ import (
 	"sort"
 )
 
+// Axis represents which axis we partition on
 type Axis uint8
 
 const (
+	// AxisNone is used when we don't have an axis to partition on
 	AxisNone Axis = iota
-	AxisX    Axis = iota
-	AxisY    Axis = iota
-	AxisZ    Axis = iota
+	// AxisX is used when we partition on X
+	AxisX Axis = iota
+	// AxisY is used when we partition on Y
+	AxisY Axis = iota
+	// AxisZ is used when we partition on Z
+	AxisZ Axis = iota
 )
 
+// KdTree represents the root of a kd-Tree
 type KdTree struct {
 	Box  *Box
 	Root *Node
 }
 
-func BuildTree(triangles []*Triangle) *KdTree {
+func buildTree(triangles []*Triangle) *KdTree {
 	// Ensure our bounding box contains all triangles
-	box := triangles[0].BoundingBox()
+	box := triangles[0].boundingBox()
 	for _, triangle := range triangles[1:] {
-		box.Expand(triangle.BoundingBox())
+		box.Expand(triangle.boundingBox())
 	}
-	node := NewNode(triangles)
-	node.Split(0)
+	node := newNode(triangles)
+	node.split(0)
 	return &KdTree{box, node}
 }
 
+// Intersect performs an intersection test on the kd-tree
 func (tree *KdTree) Intersect(r Ray) Hit {
 	tmin, tmax := tree.Box.Intersect(r)
 	if tmax < tmin || tmax <= 0 {
 		return NoHit
 	}
-	return tree.Root.Intersect(r, tmin, tmax)
+	return tree.Root.intersect(r, tmin, tmax)
 }
 
+// Node represents a node in a kd-tree
 type Node struct {
 	Axis      Axis
 	Point     float64
@@ -46,16 +54,16 @@ type Node struct {
 	Right     *Node
 }
 
-func NewNode(shapes []*Triangle) *Node {
+func newNode(shapes []*Triangle) *Node {
 	return &Node{AxisNone, 0, shapes, nil, nil}
 }
 
-func (node *Node) Intersect(r Ray, tmin, tmax float64) Hit {
+func (node *Node) intersect(r Ray, tmin, tmax float64) Hit {
 	var tsplit float64
 	var leftFirst bool
 	switch node.Axis {
 	case AxisNone:
-		return node.IntersectTriangles(r)
+		return node.intersectTriangles(r)
 	case AxisX:
 		tsplit = (node.Point - r.Origin.X) / r.Direction.X
 		leftFirst = (r.Origin.X < node.Point) || (r.Origin.X == node.Point && r.Direction.X <= 0)
@@ -75,24 +83,23 @@ func (node *Node) Intersect(r Ray, tmin, tmax float64) Hit {
 		second = node.Left
 	}
 	if tsplit > tmax || tsplit <= 0 {
-		return first.Intersect(r, tmin, tmax)
+		return first.intersect(r, tmin, tmax)
 	} else if tsplit < tmin {
-		return second.Intersect(r, tmin, tmax)
+		return second.intersect(r, tmin, tmax)
 	} else {
-		h1 := first.Intersect(r, tmin, tsplit)
+		h1 := first.intersect(r, tmin, tsplit)
 		if h1.T <= tsplit {
 			return h1
 		}
-		h2 := second.Intersect(r, tsplit, math.Min(tmax, h1.T))
+		h2 := second.intersect(r, tsplit, math.Min(tmax, h1.T))
 		if h1.T <= h2.T {
 			return h1
-		} else {
-			return h2
 		}
+		return h2
 	}
 }
 
-func (node *Node) IntersectTriangles(r Ray) Hit {
+func (node *Node) intersectTriangles(r Ray) Hit {
 	hit := NoHit
 	for _, shape := range node.Triangles {
 		_, h := shape.IntersectHit(r)
@@ -103,10 +110,10 @@ func (node *Node) IntersectTriangles(r Ray) Hit {
 	return hit
 }
 
-func (node *Node) PartitionScore(axis Axis, point float64) int {
+func (node *Node) partitionScore(axis Axis, point float64) int {
 	left, right := 0, 0
 	for _, shape := range node.Triangles {
-		box := shape.BoundingBox()
+		box := shape.boundingBox()
 		l, r := box.Partition(axis, point)
 		if l {
 			left++
@@ -117,16 +124,15 @@ func (node *Node) PartitionScore(axis Axis, point float64) int {
 	}
 	if left >= right {
 		return left
-	} else {
-		return right
 	}
+	return right
 }
 
-func (node *Node) Partition(size int, axis Axis, point float64) (left, right []*Triangle) {
+func (node *Node) partition(size int, axis Axis, point float64) (left, right []*Triangle) {
 	left = make([]*Triangle, 0, size)
 	right = make([]*Triangle, 0, size)
 	for _, shape := range node.Triangles {
-		box := shape.BoundingBox()
+		box := shape.boundingBox()
 		l, r := box.Partition(axis, point)
 		if l {
 			left = append(left, shape)
@@ -138,7 +144,7 @@ func (node *Node) Partition(size int, axis Axis, point float64) (left, right []*
 	return
 }
 
-func (node *Node) Split(depth int) {
+func (node *Node) split(depth int) {
 	if len(node.Triangles) < 8 {
 		return
 	}
@@ -146,7 +152,7 @@ func (node *Node) Split(depth int) {
 	ys := make([]float64, 0, len(node.Triangles)*2)
 	zs := make([]float64, 0, len(node.Triangles)*2)
 	for _, shape := range node.Triangles {
-		box := shape.BoundingBox()
+		box := shape.boundingBox()
 		xs = append(xs, box.min.X)
 		xs = append(xs, box.max.X)
 		ys = append(ys, box.min.Y)
@@ -161,19 +167,19 @@ func (node *Node) Split(depth int) {
 	best := int(float64(len(node.Triangles)) * 0.85)
 	bestAxis := AxisNone
 	bestPoint := 0.0
-	sx := node.PartitionScore(AxisX, mx)
+	sx := node.partitionScore(AxisX, mx)
 	if sx < best {
 		best = sx
 		bestAxis = AxisX
 		bestPoint = mx
 	}
-	sy := node.PartitionScore(AxisY, my)
+	sy := node.partitionScore(AxisY, my)
 	if sy < best {
 		best = sy
 		bestAxis = AxisY
 		bestPoint = my
 	}
-	sz := node.PartitionScore(AxisZ, mz)
+	sz := node.partitionScore(AxisZ, mz)
 	if sz < best {
 		best = sz
 		bestAxis = AxisZ
@@ -182,12 +188,12 @@ func (node *Node) Split(depth int) {
 	if bestAxis == AxisNone {
 		return
 	}
-	l, r := node.Partition(best, bestAxis, bestPoint)
+	l, r := node.partition(best, bestAxis, bestPoint)
 	node.Axis = bestAxis
 	node.Point = bestPoint
-	node.Left = NewNode(l)
-	node.Right = NewNode(r)
-	node.Left.Split(depth + 1)
-	node.Right.Split(depth + 1)
+	node.Left = newNode(l)
+	node.Right = newNode(r)
+	node.Left.split(depth + 1)
+	node.Right.split(depth + 1)
 	node.Triangles = nil
 }

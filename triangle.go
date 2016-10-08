@@ -22,41 +22,36 @@ import (
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// EPSILON added to normal vector to prevent acne
-const EPSILON = 0.00001
-
+// Triangle stores relevant information for triangles
 type Triangle struct {
 	V1, V2, V3   Vec3
 	N1, N2, N3   Vec3
-	Normal       Vec3
 	T1, T2, T3   Vec3
 	color        Vec3
 	transparency float64
 	reflection   float64
-	center       Vec3
 }
 
-func (t *Triangle) GetColor() Vec3 {
+// Color returns the color of a triangle
+func (t *Triangle) Color() Vec3 {
 	return t.color
 }
 
-func (t *Triangle) IsTransparent() bool {
+func (t *Triangle) isTransparent() bool {
 	return t.transparency > 0
 }
 
-func (t *Triangle) GetTransparency() float64 {
+// Transparency returns a triangles transparency
+func (t *Triangle) Transparency() float64 {
 	return t.transparency
 }
 
-func (t *Triangle) GetReflection() float64 {
+// Reflection returns the amount of light a triangle reflects
+func (t *Triangle) Reflection() float64 {
 	return t.reflection
 }
 
-func (t *Triangle) GetCenter() Vec3 {
-	return t.center
-}
-
-func (t *Triangle) BoundingBox() *Box {
+func (t *Triangle) boundingBox() *Box {
 	box, err := computeBoundingBox([]Vec3{t.V1, t.V2, t.V3})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -64,7 +59,7 @@ func (t *Triangle) BoundingBox() *Box {
 	return box
 }
 
-func (t *Triangle) MidPoint() Vec3 {
+func (t *Triangle) midPoint() Vec3 {
 	// Add three points of triangle and average
 	xAverage := (t.V1.X + t.V2.X + t.V3.X) / 3
 	yAverage := (t.V1.Y + t.V2.Y + t.V3.Y) / 3
@@ -72,14 +67,14 @@ func (t *Triangle) MidPoint() Vec3 {
 	return Vec3{xAverage, yAverage, zAverage}
 }
 
-func (t *Triangle) ComputeNormal() Vec3 {
+func (t *Triangle) computeNormal() Vec3 {
 	e1 := t.V2.Sub(t.V1)
 	e2 := t.V3.Sub(t.V1)
 	return crossProduct(e1, e2).Normalize()
 }
 
-func (t *Triangle) FixNormals() {
-	n := t.ComputeNormal()
+func (t *Triangle) fixNormals() {
+	n := t.computeNormal()
 	zero := Vec3{}
 	if t.N1 == zero {
 		t.N1 = n
@@ -91,14 +86,13 @@ func (t *Triangle) FixNormals() {
 		t.N3 = n
 	}
 }
+
+// Equals checks for equality of two triangles
 func (t *Triangle) Equals(t2 *Triangle) bool {
-	if t.V1.Equals(t2.V1) && t.V2.Equals(t2.V2) && t.V3.Equals(t2.V3) {
-		return true
-	}
-	return false
+	return t.V1.Equals(t2.V1) && t.V2.Equals(t2.V2) && t.V3.Equals(t2.V3)
 }
 
-// Moller-Trumbore algorithm
+// IntersectHit using Moller-Trumbore algorithm
 func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 
 	//Find vectors for two edges sharing V1
@@ -133,13 +127,13 @@ func (t *Triangle) IntersectHit(r Ray) (bool, Hit) {
 	if x > EPSILON { //ray intersection
 		hitPoint := r.Origin.Add(r.Direction.Mul(x))
 		//		normal := crossProduct(e1, e2)
-		return true, Hit{x, hitPoint, t.NormalAt(hitPoint)}
+		return true, Hit{x, hitPoint, t.normalAt(hitPoint)}
 	}
 	return false, NoHit
 
 }
 
-func (t *Triangle) Barycentric(p Vec3) (u, v, w float64) {
+func (t *Triangle) barycentric(p Vec3) (u, v, w float64) {
 	v0 := t.V2.Sub(t.V1)
 	v1 := t.V3.Sub(t.V1)
 	v2 := p.Sub(t.V1)
@@ -155,8 +149,8 @@ func (t *Triangle) Barycentric(p Vec3) (u, v, w float64) {
 	return
 }
 
-func (t *Triangle) NormalAt(p Vec3) Vec3 {
-	u, v, w := t.Barycentric(p)
+func (t *Triangle) normalAt(p Vec3) Vec3 {
+	u, v, w := t.barycentric(p)
 	n := Vec3{}
 	n = n.Add(t.N1.Mul(u))
 	n = n.Add(t.N2.Mul(v))

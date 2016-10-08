@@ -26,6 +26,7 @@ type Vec3 struct {
 	X, Y, Z float64
 }
 
+// Add implements vector addition
 func (v Vec3) Add(vectors ...Vec3) Vec3 {
 	for _, vector := range vectors {
 		v.X += vector.X
@@ -35,6 +36,7 @@ func (v Vec3) Add(vectors ...Vec3) Vec3 {
 	return v
 }
 
+// Sub implements vector subtraction
 func (v Vec3) Sub(vectors ...Vec3) Vec3 {
 	for _, vector := range vectors {
 		v.X -= vector.X
@@ -44,6 +46,7 @@ func (v Vec3) Sub(vectors ...Vec3) Vec3 {
 	return v
 }
 
+// Mul implements scalar multiplication
 func (v Vec3) Mul(x float64) Vec3 {
 	v.X *= x
 	v.Y *= x
@@ -51,6 +54,7 @@ func (v Vec3) Mul(x float64) Vec3 {
 	return v
 }
 
+// MulVec implements vector multiplication
 func (v Vec3) MulVec(v2 Vec3) Vec3 {
 	v.X *= v2.X
 	v.Y *= v2.Y
@@ -58,19 +62,12 @@ func (v Vec3) MulVec(v2 Vec3) Vec3 {
 	return v
 }
 
+// Reflect implements vector reflection
 func (v Vec3) Reflect(n Vec3) Vec3 {
 	return v.Sub(n.Mul(dotProduct(v, n) * 2))
 }
 
-func clamp(x, min, max float64) float64 {
-	if x < min {
-		return min
-	} else if x > max {
-		return max
-	}
-	return x
-}
-
+// Refract implements vector refraction
 func (v Vec3) Refract(n Vec3, ior float64) Vec3 {
 	cosi := clamp(dotProduct(v, n), -1, 1)
 	etai := 1.0
@@ -88,6 +85,7 @@ func (v Vec3) Refract(n Vec3, ior float64) Vec3 {
 	return v.Mul(eta).Add(n.Mul(eta*cosi - math.Sqrt(k)))
 }
 
+// Inverse returns the inverse of a vector
 func (v Vec3) Inverse() Vec3 {
 	v.X = 1 / v.X
 	v.Y = 1 / v.Y
@@ -95,20 +93,24 @@ func (v Vec3) Inverse() Vec3 {
 	return v
 }
 
+// Distance returns the distance between two vectors
 func (v Vec3) Distance(v2 Vec3) float64 {
 	sub := v.Sub(v2)
 	dot := dotProduct(sub, sub)
 	return math.Sqrt(dot)
 }
 
+// Equals checks for vector equality
 func (v Vec3) Equals(v2 Vec3) bool {
 	return v.X == v2.X && v.Y == v2.Y && v.Z == v2.Z
 }
 
+// Magnitude returns the magnitude of the vector
 func (v Vec3) Magnitude() float64 {
 	return math.Sqrt(dotProduct(v, v))
 }
 
+// Normalize returns a normalized vector
 func (v Vec3) Normalize() Vec3 {
 	return v.Mul(1 / math.Sqrt(dotProduct(v, v)))
 }

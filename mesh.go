@@ -19,22 +19,25 @@ import "fmt"
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Mesh contains its respective triangles, and their bounding kd-tree
 type Mesh struct {
 	triangles []*Triangle
 	kd        *KdTree
 }
 
-func NewMesh(triangles []*Triangle) *Mesh {
+func newMesh(triangles []*Triangle) *Mesh {
 	fmt.Printf("Building k-d tree... ")
-	kdTree := BuildTree(triangles)
+	kdTree := buildTree(triangles)
 	fmt.Println("Done")
 	return &Mesh{triangles, kdTree}
 }
 
-func (m Mesh) GetColor() Vec3 {
+// Color returns the color of the Mesh
+func (m Mesh) Color() Vec3 {
 	return Vec3{0.1, 0.7, 0.9}
 }
 
+// IntersectHit performs an intersection test on a Mesh
 func (m Mesh) IntersectHit(r Ray) Hit {
 	hit := m.kd.Intersect(r)
 	if hit.IsHit() {

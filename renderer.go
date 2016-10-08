@@ -78,5 +78,5 @@ func (s *Scene) rayTrace(ray Ray, depth int) Vec3 {
 	albedo := 0.18
 	normalLightProduct := dotProduct(pHit.Normal, light)
 	diffColor := albedo / math.Pi * s.light.intensity * math.Max(0, normalLightProduct)
-	return closestObject.GetColor().Mul(diffColor)
+	return closestObject.Color().Mul(diffColor)
 }

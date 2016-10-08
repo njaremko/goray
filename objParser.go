@@ -36,13 +36,17 @@ func parseIndex(value string, length int) int {
 	return parsed
 }
 
-func LoadOBJ(path string) (*Mesh, error) {
-	fmt.Printf("Loading OBJ: %s\n", path)
+// OpenOBJ takes the path to an obj file and returns a Mesh pointer
+func OpenOBJ(path string) (*Mesh, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	}()
 	// Create slices to store data
 	vectors := make([]Vec3, 1, 1024)
 	textures := make([]Vec3, 1, 1024)
@@ -92,11 +96,11 @@ func LoadOBJ(path string) (*Mesh, error) {
 				t.N1 = normals[fNormals[i1]]
 				t.N2 = normals[fNormals[i2]]
 				t.N3 = normals[fNormals[i3]]
-				t.FixNormals()
+				t.fixNormals()
 				triangles = append(triangles, &t)
 			}
 		}
 	}
 
-	return NewMesh(triangles), scanner.Err()
+	return newMesh(triangles), scanner.Err()
 }

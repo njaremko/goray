@@ -21,6 +21,7 @@ import (
 	"math"
 )
 
+// Sphere represents a sphere
 type Sphere struct {
 	center       Vec3
 	radius       float64
@@ -29,26 +30,26 @@ type Sphere struct {
 	reflection   float64
 }
 
-func (s *Sphere) GetColor() Vec3 {
+// Color returns the color of a triangle
+func (s *Sphere) Color() Vec3 {
 	return s.color
 }
 
-func (s *Sphere) IsTransparent() bool {
+func (s *Sphere) isTransparent() bool {
 	return s.transparency > 0
 }
 
-func (s *Sphere) GetTransparency() float64 {
+// Transparency returns the transparency of a sphere
+func (s *Sphere) Transparency() float64 {
 	return s.transparency
 }
 
-func (s *Sphere) GetReflection() float64 {
+// Reflection returns the amount of light a sphere returns
+func (s *Sphere) Reflection() float64 {
 	return s.reflection
 }
 
-func (s *Sphere) GetCenter() Vec3 {
-	return s.center
-}
-
+// Intersect returns whether a hit occurs or not
 func (s *Sphere) Intersect(r Ray) bool {
 	distance := r.Origin.Sub(s.center)
 	b := dotProduct(distance, r.Direction)
@@ -73,6 +74,7 @@ func (s *Sphere) Intersect(r Ray) bool {
 	return true
 }
 
+// IntersectHit returns a Hit if one occurs
 func (s *Sphere) IntersectHit(r Ray) Hit {
 	distance := r.Origin.Sub(s.center)
 	b := dotProduct(distance, r.Direction)
