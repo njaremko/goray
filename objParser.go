@@ -47,7 +47,7 @@ func OpenOBJ(path string) (*Mesh, error) {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}()
-	// Create slices to store data
+	// Allocate slices to store data
 	vectors := make([]Vec3, 1, 1024)
 	textures := make([]Vec3, 1, 1024)
 	normals := make([]Vec3, 1, 1024)

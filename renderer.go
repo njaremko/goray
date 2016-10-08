@@ -12,10 +12,10 @@ type Renderer struct {
 	scene   *Scene
 	img     *image.RGBA
 	cam     *Camera
-	jobChan chan Rect
+	jobChan chan rect
 }
 
-func (renderer *Renderer) renderRect(r *Rect) {
+func (renderer *Renderer) renderRect(r *rect) {
 	for y := r.top; y < r.bottom; y++ {
 		for x := r.left; x < r.right; x++ {
 			// Compute primary ray direction

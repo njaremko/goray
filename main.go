@@ -32,9 +32,12 @@ import (
 
 // EPSILON added to normal vector to prevent acne
 const EPSILON = 0.00001
-const MaxDepth = 2
+
+// MAXDEPTH is the maximum number of bounces we will allow in global illumination
+const MAXDEPTH = 2
 
 var infinity = math.Inf(1)
+
 var zeroVec = Vec3{0, 0, 0}
 var delta = math.Sqrt(1.0E-16)
 
@@ -42,20 +45,23 @@ var wg sync.WaitGroup
 
 var backgroundColor = Vec3{0.1, 0.1, 0.1}
 
+// Ray represents a ray of light from the camera
 type Ray struct {
 	Origin, Direction Vec3
 }
 
+// BoundingVolume is any struct that defines Intersect
 type BoundingVolume interface {
 	Intersect(r Ray) bool
 }
 
+// Geometry represents any geometry that we can run IntersectHit on
 type Geometry interface {
 	IntersectHit(r Ray) Hit
 	Color() Vec3
 }
 
-type Rect struct {
+type rect struct {
 	left   int
 	right  int
 	top    int
@@ -65,7 +71,7 @@ type Rect struct {
 func main() {
 	//defer profile.Start().Stop()
 	// Image size
-	imageRes := 512
+	imageRes := 256
 	w, h := imageRes, imageRes
 	// define chunk size for rendering
 	chunkSize := 16
@@ -87,7 +93,7 @@ func main() {
 	scene := &Scene{light, []Geometry{mesh, sp1, sp2, sp3, sp4, sp5}}
 	eye := Vec3{0, 0, -4.0}
 	camera := Camera{eye, w, h, imageRes}
-	jobChan := make(chan Rect, 10)
+	jobChan := make(chan rect, 10)
 	renderer := Renderer{scene, t, &camera, jobChan}
 	///////////////////
 	fmt.Println("Rendering...")
@@ -100,7 +106,7 @@ func main() {
 	for y := 0; y < h; y += chunkSize {
 		for x := 0; x < w; x += chunkSize {
 			wg.Add(1)
-			renderer.jobChan <- Rect{x, y, x + chunkSize, y + chunkSize}
+			renderer.jobChan <- rect{x, y, x + chunkSize, y + chunkSize}
 		}
 	}
 	// Wait for all jobs to finish

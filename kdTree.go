@@ -101,8 +101,8 @@ func (node *Node) intersect(r Ray, tmin, tmax float64) Hit {
 
 func (node *Node) intersectTriangles(r Ray) Hit {
 	hit := NoHit
-	for _, shape := range node.Triangles {
-		_, h := shape.IntersectHit(r)
+	for _, triangle := range node.Triangles {
+		_, h := triangle.IntersectHit(r)
 		if h.T < hit.T {
 			hit = h
 		}
