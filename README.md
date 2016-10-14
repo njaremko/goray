@@ -6,6 +6,8 @@ Features (Toward a 1.0 release):
 - [x] Concurrency support
 - [x] Ray-Sphere intersection
 - [x] Ray-Triangle intersection
+- [x] Ray-Plane intersection
+- [x] Ray-Box intersection
 - [x] Directional lighting
 - [x] Diffuse lighting
 - [x] kd-tree volume partitioning
