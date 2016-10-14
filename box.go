@@ -18,6 +18,7 @@ package main
 */
 
 import (
+	"errors"
 	"math"
 )
 
@@ -109,4 +110,32 @@ func (b *Box) Overlaps(other *Box) bool {
 	z := b.max.Z >= other.min.Z && b.min.Z <= other.max.Z
 
 	return x && y && z
+}
+
+func computeBoundingBox(vertSlice []Vec3) (*Box, error) {
+	if len(vertSlice) < 2 {
+		return nil, errors.New("vertSlice is too small to compute bounding box")
+	}
+	min, max := vertSlice[0], vertSlice[0]
+	for _, vert := range vertSlice[1:] {
+		if vert.X < min.X {
+			min.X = vert.X
+		}
+		if vert.Y < min.Y {
+			min.Y = vert.Y
+		}
+		if vert.Z < min.Z {
+			min.Z = vert.Z
+		}
+		if vert.X > max.X {
+			max.X = vert.X
+		}
+		if vert.Y > max.Y {
+			max.Y = vert.Y
+		}
+		if vert.Z > max.Z {
+			max.Z = vert.Z
+		}
+	}
+	return &Box{min, max}, nil
 }
