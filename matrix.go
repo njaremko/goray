@@ -69,50 +69,6 @@ func Rotate(v Vec3, a float64) Matrix {
 		0, 0, 0, 1}
 }
 
-// Frustum calculates a frustum culling matrix given...
-func Frustum(left, right, bottom, top, near, far float64) Matrix {
-	t1 := 2 * near
-	t2 := right - left
-	t3 := top - bottom
-	t4 := far - near
-	return Matrix{
-		t1 / t2, 0, (right + left) / t2, 0,
-		0, t1 / t3, (top + bottom) / t3, 0,
-		0, 0, (-far - near) / t4, (-t1 * far) / t4,
-		0, 0, -1, 0}
-}
-
-// Orthographic calculates an orthographic projection matrix given...
-func Orthographic(left, right, bottom, top, near, far float64) Matrix {
-	return Matrix{
-		2 / (right - left), 0, 0, -(right + left) / (right - left),
-		0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
-		0, 0, -2 / (far - near), -(far + near) / (far - near),
-		0, 0, 0, 1}
-}
-
-// Perspective calculates a perspective matrix given...
-func Perspective(fovy, aspect, near, far float64) Matrix {
-	ymax := near * math.Tan(fovy*math.Pi/360)
-	xmax := ymax * aspect
-	return Frustum(-xmax, xmax, -ymax, ymax, near, far)
-}
-
-// LookAtMatrix calculates what the matrix looks like to an eye
-func LookAtMatrix(eye, center, up Vec3) Matrix {
-	up = up.Normalize()
-	f := center.Sub(eye).Normalize()
-	s := crossProduct(f, up).Normalize()
-	u := crossProduct(s, f)
-	m := Matrix{
-		s.X, u.X, f.X, 0,
-		s.Y, u.Y, f.Y, 0,
-		s.Z, u.Z, f.Z, 0,
-		0, 0, 0, 1,
-	}
-	return m.Transpose().Inverse().Translate(eye)
-}
-
 // Translate performs a translation on m with vector v
 func (m Matrix) Translate(v Vec3) Matrix {
 	return Translate(v).Mul(m)
@@ -126,21 +82,6 @@ func (m Matrix) Scale(v Vec3) Matrix {
 // Rotate performs a rotation on m with vector v and angle a
 func (m Matrix) Rotate(v Vec3, a float64) Matrix {
 	return Rotate(v, a).Mul(m)
-}
-
-// Frustum returns a frustum culled matrix m given...
-func (m Matrix) Frustum(left, right, bottom, top, near, far float64) Matrix {
-	return Frustum(left, right, bottom, top, near, far).Mul(m)
-}
-
-// Orthographic returns an orthographic projection matrix given...
-func (m Matrix) Orthographic(left, right, bottom, top, near, far float64) Matrix {
-	return Orthographic(left, right, bottom, top, near, far).Mul(m)
-}
-
-// Perspective returns a perspective matrix given...
-func (m Matrix) Perspective(fovy, aspect, near, far float64) Matrix {
-	return Perspective(fovy, aspect, near, far).Mul(m)
 }
 
 // Mul performs matrix multiplication on two matrices
@@ -253,4 +194,63 @@ func (m Matrix) Inverse() Matrix {
 	result.x32 = (m.x02*m.x11*m.x30 - m.x01*m.x12*m.x30 - m.x02*m.x10*m.x31 + m.x00*m.x12*m.x31 + m.x01*m.x10*m.x32 - m.x00*m.x11*m.x32) / d
 	result.x33 = (m.x01*m.x12*m.x20 - m.x02*m.x11*m.x20 + m.x02*m.x10*m.x21 - m.x00*m.x12*m.x21 - m.x01*m.x10*m.x22 + m.x00*m.x11*m.x22) / d
 	return result
+}
+
+// Frustum calculates a frustum culling matrix given...
+func Frustum(left, right, bottom, top, near, far float64) Matrix {
+	t1 := 2 * near
+	t2 := right - left
+	t3 := top - bottom
+	t4 := far - near
+	return Matrix{
+		t1 / t2, 0, (right + left) / t2, 0,
+		0, t1 / t3, (top + bottom) / t3, 0,
+		0, 0, (-far - near) / t4, (-t1 * far) / t4,
+		0, 0, -1, 0}
+}
+
+// Orthographic calculates an orthographic projection matrix given...
+func Orthographic(left, right, bottom, top, near, far float64) Matrix {
+	return Matrix{
+		2 / (right - left), 0, 0, -(right + left) / (right - left),
+		0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
+		0, 0, -2 / (far - near), -(far + near) / (far - near),
+		0, 0, 0, 1}
+}
+
+// Perspective calculates a perspective matrix given...
+func Perspective(fovy, aspect, near, far float64) Matrix {
+	ymax := near * math.Tan(fovy*math.Pi/360)
+	xmax := ymax * aspect
+	return Frustum(-xmax, xmax, -ymax, ymax, near, far)
+}
+
+// LookAtMatrix calculates what the matrix looks like to an eye
+func LookAtMatrix(eye, center, up Vec3) Matrix {
+	up = up.Normalize()
+	f := center.Sub(eye).Normalize()
+	s := crossProduct(f, up).Normalize()
+	u := crossProduct(s, f)
+	m := Matrix{
+		s.X, u.X, f.X, 0,
+		s.Y, u.Y, f.Y, 0,
+		s.Z, u.Z, f.Z, 0,
+		0, 0, 0, 1,
+	}
+	return m.Transpose().Inverse().Translate(eye)
+}
+
+// Frustum returns a frustum culled matrix m given...
+func (m Matrix) Frustum(left, right, bottom, top, near, far float64) Matrix {
+	return Frustum(left, right, bottom, top, near, far).Mul(m)
+}
+
+// Orthographic returns an orthographic projection matrix given...
+func (m Matrix) Orthographic(left, right, bottom, top, near, far float64) Matrix {
+	return Orthographic(left, right, bottom, top, near, far).Mul(m)
+}
+
+// Perspective returns a perspective matrix given...
+func (m Matrix) Perspective(fovy, aspect, near, far float64) Matrix {
+	return Perspective(fovy, aspect, near, far).Mul(m)
 }
