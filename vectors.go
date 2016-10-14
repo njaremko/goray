@@ -115,6 +115,14 @@ func (v Vec3) Normalize() Vec3 {
 	return v.Mul(1 / math.Sqrt(dotProduct(v, v)))
 }
 
+func (v Vec3) Min(b Vec3) Vec3 {
+	return Vec3{math.Min(v.X, b.X), math.Min(v.Y, b.Y), math.Min(v.Z, b.Z)}
+}
+
+func (v Vec3) Max(b Vec3) Vec3 {
+	return Vec3{math.Max(v.X, b.X), math.Max(v.Y, b.Y), math.Max(v.Z, b.Z)}
+}
+
 func dotProduct(a, b Vec3) float64 {
 	return a.X*b.X + a.Y*b.Y + a.Z*b.Z
 }
