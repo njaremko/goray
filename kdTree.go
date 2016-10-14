@@ -180,7 +180,7 @@ func (node *Node) split(depth int) {
 	sort.Float64s(xs)
 	sort.Float64s(ys)
 	sort.Float64s(zs)
-	mx, my, mz := Median(xs), Median(ys), Median(zs)
+	mx, my, mz := median(xs), median(ys), median(zs)
 	best := int(float64(len(node.Triangles)) * 0.85)
 	bestAxis := AxisNone
 	bestPoint := 0.0

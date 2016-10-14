@@ -63,15 +63,15 @@ func OpenOBJ(path string) (*Mesh, error) {
 		args := fields[1:]
 		switch keyword {
 		case "v":
-			f := ParseFloats(args)
+			f := parseFloats(args)
 			v := Vec3{f[0], f[1], f[2]}
 			vectors = append(vectors, v)
 		case "vt":
-			f := ParseFloats(args)
+			f := parseFloats(args)
 			v := Vec3{f[0], f[1], 0}
 			textures = append(textures, v)
 		case "vn":
-			f := ParseFloats(args)
+			f := parseFloats(args)
 			v := Vec3{f[0], f[1], f[2]}
 			normals = append(normals, v)
 		case "f":

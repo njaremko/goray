@@ -17,6 +17,7 @@ package main
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Camera is used to calculate rays into the scene
 type Camera struct {
 	eye    Vec3
 	width  int

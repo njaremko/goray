@@ -23,8 +23,7 @@ import (
 	"strconv"
 )
 
-// Median returns the median element in a slice of floats
-func Median(items []float64) float64 {
+func median(items []float64) float64 {
 	n := len(items)
 	switch {
 	case n == 0:
@@ -47,8 +46,7 @@ func clamp(x, min, max float64) float64 {
 	return x
 }
 
-// ParseFloats parses a string and returns a slice of float64s
-func ParseFloats(items []string) []float64 {
+func parseFloats(items []string) []float64 {
 	result := make([]float64, len(items))
 	for i, item := range items {
 		f, err := strconv.ParseFloat(item, 64)

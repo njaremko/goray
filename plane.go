@@ -17,16 +17,19 @@ package main
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// Plane is used to store information regarding an infinity plane
 type Plane struct {
 	Point  Vec3
 	Normal Vec3
-	Color  Vec3
+	color  Vec3
 }
 
-func (p *Plane) GetColor() Vec3 {
-	return p.Color
+// Color returns the color of the plane, used to fufill Geometry interface
+func (p *Plane) Color() Vec3 {
+	return p.color
 }
 
+// IntersectHit performs an intersection test on the plan and returns a Hit
 func (p *Plane) IntersectHit(r Ray) Hit {
 	denom := dotProduct(p.Normal, r.Direction)
 	if denom > EPSILON {
