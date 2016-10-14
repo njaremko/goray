@@ -53,24 +53,24 @@ func Rotate(v Vec3, a float64) Matrix {
 }
 
 // Frustum calculates a frustum culling matrix given...
-func Frustum(l, r, b, t, n, f float64) Matrix {
-	t1 := 2 * n
-	t2 := r - l
-	t3 := t - b
-	t4 := f - n
+func Frustum(left, right, bottom, top, near, far float64) Matrix {
+	t1 := 2 * near
+	t2 := right - left
+	t3 := top - bottom
+	t4 := far - near
 	return Matrix{
-		t1 / t2, 0, (r + l) / t2, 0,
-		0, t1 / t3, (t + b) / t3, 0,
-		0, 0, (-f - n) / t4, (-t1 * f) / t4,
+		t1 / t2, 0, (right + left) / t2, 0,
+		0, t1 / t3, (top + bottom) / t3, 0,
+		0, 0, (-far - near) / t4, (-t1 * far) / t4,
 		0, 0, -1, 0}
 }
 
 // Orthographic calculates an orthographic projection matrix given...
-func Orthographic(l, r, b, t, n, f float64) Matrix {
+func Orthographic(left, right, bottom, top, near, far float64) Matrix {
 	return Matrix{
-		2 / (r - l), 0, 0, -(r + l) / (r - l),
-		0, 2 / (t - b), 0, -(t + b) / (t - b),
-		0, 0, -2 / (f - n), -(f + n) / (f - n),
+		2 / (right - left), 0, 0, -(right + left) / (right - left),
+		0, 2 / (top - bottom), 0, -(top + bottom) / (top - bottom),
+		0, 0, -2 / (far - near), -(far + near) / (far - near),
 		0, 0, 0, 1}
 }
 
