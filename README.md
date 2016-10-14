@@ -9,13 +9,14 @@ Features (Toward a 1.0 release):
 - [x] Directional lighting
 - [x] Diffuse lighting
 - [x] kd-tree volume partitioning
+- [x] Matrix transformations of meshes
+- [x] .obj file support
 - [ ] Reflections (Almost done)
 - [ ] Refraction (Almost done)
 - [ ] Fresnel (Almost done)
 - [ ] Anti-Aliasing
 - [ ] Sub-surface Scattering
 - [ ] Bézier Curves and Surfaces
-- [ ] .obj file support (this is partially complete)
 - [ ] .3ds file support
 
 Future probable features:
