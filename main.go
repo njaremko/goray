@@ -30,6 +30,8 @@ import (
 	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
+// Various constants////////
+
 // EPSILON added to normal vector to prevent acne
 const EPSILON = 0.00001
 
@@ -37,13 +39,13 @@ const EPSILON = 0.00001
 const MAXDEPTH = 2
 
 var infinity = math.Inf(1)
-
 var zeroVec = Vec3{0, 0, 0}
 var delta = math.Sqrt(1.0E-16)
+var backgroundColor = Vec3{0.1, 0.1, 0.1}
+
+////////////////////////////
 
 var wg sync.WaitGroup
-
-var backgroundColor = Vec3{0.1, 0.1, 0.1}
 
 // Ray represents a ray of light from the camera
 type Ray struct {
@@ -119,12 +121,14 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
+	// If an error occurs during write, print error to stderr
 	defer func() {
 		if err := outFile.Close(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}()
 	bufWriter := bufio.NewWriter(outFile)
+	// If an error occurs during write, print error to stderr
 	defer func() {
 		if err := bufWriter.Flush(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
