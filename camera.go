@@ -1,5 +1,9 @@
 package main
 
+import (
+	"math"
+)
+
 /*
    Copyright (C) 2016 Nathan Jaremko
 
@@ -19,14 +23,31 @@ package main
 
 // Camera is used to calculate rays into the scene
 type Camera struct {
-	eye    Vec3
-	width  int
-	height int
-	depth  int
+	eye         Vec3
+	width       float64
+	height      float64
+	fov         float64
+	scale       float64
+	aspectRatio float64
+	depth       int
+}
+
+func degToRad(d float64) float64 { return d * math.Pi / 180 }
+func radToDeg(r float64) float64 { return r / math.Pi / 180 }
+
+// Init sets up the camera struct
+func (c *Camera) Init(eye Vec3, w, h int) {
+	c.eye = eye
+	c.fov = 90
+	c.width = float64(w)
+	c.height = float64(h)
+	c.depth = 1
+	c.scale = math.Tan(degToRad(c.fov * 0.5))
+	c.aspectRatio = c.width / c.height
 }
 
 func (c *Camera) rayForPixel(x int, y int) Ray {
-	dir := Vec3{float64(x) - float64(c.width)*0.5, float64(y) - float64(c.height)*0.5,
+	dir := Vec3{(2*(float64(x)+0.5)/c.width - 1) * c.aspectRatio * c.scale, (1 - 2*(float64(y)+0.5)/c.height) * c.scale,
 		float64(c.depth)}.Normalize()
 	return Ray{c.eye, dir}
 }

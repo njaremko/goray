@@ -26,10 +26,16 @@ import (
 )
 
 type Renderer struct {
-	scene   *Scene
-	img     *image.RGBA
-	cam     *Camera
-	jobChan chan rect
+	scene      *Scene
+	maxX, maxY int
+	pixelChan  chan Pixel
+	cam        *Camera
+	jobChan    chan rect
+}
+
+type Pixel struct {
+	x, y  int
+	color color.Color
 }
 
 func (renderer *Renderer) renderRect(r *rect) {
@@ -40,9 +46,18 @@ func (renderer *Renderer) renderRect(r *rect) {
 			g := renderer.scene.rayTrace(ray, 0)
 			g.linearToSRGB()
 			colour := color.RGBA64{ratioToColor(g.X), ratioToColor(g.Y), ratioToColor(g.Z), 65535}
-			renderer.img.Set(x, renderer.cam.height-(y+1), colour)
+			renderer.pixelChan <- Pixel{x, y, colour}
 		}
 	}
+}
+
+// CreateImage reads the pixel channel to create the final image
+func (renderer *Renderer) CreateImage() *image.RGBA {
+	img := image.NewRGBA(image.Rect(0, 0, renderer.maxX, renderer.maxY))
+	for pixel := range renderer.pixelChan {
+		img.Set(pixel.x, pixel.y, pixel.color)
+	}
+	return img
 }
 
 func (renderer *Renderer) worker(bar *pb.ProgressBar) {

@@ -20,7 +20,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"image"
 	"image/png"
 	"math"
 	"os"
@@ -73,11 +72,10 @@ type rect struct {
 func main() {
 	//defer profile.Start().Stop()
 	// Image size
-	imageRes := 256
-	w, h := imageRes, imageRes
+	w, h := 512, 512
 	// define chunk size for rendering
-	chunkSize := 16
-	t := image.NewRGBA(image.Rect(0, 0, w, h))
+	xChunkSize := w / 32
+	yChunkSize := h / 32
 	// Create geometry for the scene
 	mesh, err := OpenOBJ("teapot.obj")
 	if err != nil {
@@ -93,29 +91,33 @@ func main() {
 	// Setup the renderer
 	light := Light{Vec3{-1.0, -2.0, 2.0}.Normalize(), 20}
 	scene := &Scene{light, []Geometry{mesh, sp1, sp2, sp3, sp4, sp5}}
-	eye := Vec3{0, 0, -4.0}
-	camera := Camera{eye, w, h, imageRes}
-	jobChan := make(chan rect, 10)
-	renderer := Renderer{scene, t, &camera, jobChan}
+	eye := Vec3{0, 1, -2.0}
+	camera := Camera{}
+	camera.Init(eye, w, h)
+	jobChan := make(chan rect, w*h)
+	imgChan := make(chan Pixel, w*h*xChunkSize*yChunkSize*2)
+	renderer := Renderer{scene, w, h, imgChan, &camera, jobChan}
 	///////////////////
 	fmt.Println("Rendering...")
-	bar := pb.StartNew((imageRes / chunkSize) * (imageRes / chunkSize))
+	bar := pb.StartNew((w / xChunkSize) * (h / yChunkSize))
 	// Create workers to render chunks
 	for i := 0; i < runtime.NumCPU()*2; i++ {
 		go renderer.worker(bar)
 	}
 	// Send chunks to workers
-	for y := 0; y < h; y += chunkSize {
-		for x := 0; x < w; x += chunkSize {
+	for y := 0; y < h; y += yChunkSize {
+		for x := 0; x < w; x += xChunkSize {
 			wg.Add(1)
-			renderer.jobChan <- rect{x, y, x + chunkSize, y + chunkSize}
+			renderer.jobChan <- rect{x, y, x + xChunkSize, y + yChunkSize}
 		}
 	}
 	// Wait for all jobs to finish
 	wg.Wait()
+	close(renderer.pixelChan)
+	img := renderer.CreateImage()
 	bar.FinishPrint("")
 	outputPath := "img.png"
-	fmt.Printf("Writing output to: %s ... ", outputPath)
+	fmt.Printf("Writing output to: %s ...", outputPath)
 	defer fmt.Println("Done")
 	outFile, err := os.Create(outputPath)
 	if err != nil {
@@ -134,7 +136,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 		}
 	}()
-	err = png.Encode(bufWriter, renderer.img)
+	err = png.Encode(bufWriter, img)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
