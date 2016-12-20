@@ -25,6 +25,7 @@ import (
 	pb "gopkg.in/cheggaaa/pb.v1"
 )
 
+// Renderer contains the entire scene and rendering channels
 type Renderer struct {
 	scene      *Scene
 	maxX, maxY int
@@ -33,6 +34,7 @@ type Renderer struct {
 	jobChan    chan rect
 }
 
+// Pixel represents a pixel in the final image
 type Pixel struct {
 	x, y  int
 	color color.Color
@@ -68,11 +70,13 @@ func (renderer *Renderer) worker(bar *pb.ProgressBar) {
 	}
 }
 
+// Scene stores all geometry in the scene
 type Scene struct {
 	light    Light
 	geometry []Geometry
 }
 
+// Light represents a directional light
 type Light struct {
 	direction Vec3
 	intensity float64

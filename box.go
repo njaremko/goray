@@ -22,26 +22,30 @@ import (
 	"math"
 )
 
+// Box represents a box...
 type Box struct {
 	min Vec3
 	max Vec3
 }
 
-func (b *Box) Partition(axis Axis, point float64) (left, right bool) {
+// Partition partitions a box on an axis and says if the min and max on that axis
+// are less/greater than the point
+func (b *Box) Partition(axis Axis, point float64) (less, greater bool) {
 	switch axis {
 	case AxisX:
-		left = b.min.X <= point
-		right = b.max.X >= point
+		less = b.min.X <= point
+		greater = b.max.X >= point
 	case AxisY:
-		left = b.min.Y <= point
-		right = b.max.Y >= point
+		less = b.min.Y <= point
+		greater = b.max.Y >= point
 	case AxisZ:
-		left = b.min.Z <= point
-		right = b.max.Z >= point
+		less = b.min.Z <= point
+		greater = b.max.Z >= point
 	}
 	return
 }
 
+// Intersect calculates the intersection of a Ray with the box
 func (b *Box) Intersect(r Ray) (float64, float64) {
 	inverseDir := r.Direction.Inverse()
 
@@ -66,10 +70,12 @@ func (b *Box) Intersect(r Ray) (float64, float64) {
 	return math.Max(0.0, tmin), tmax
 }
 
+// Len calculates the distance between box min and max
 func (b *Box) Len() Vec3 {
 	return b.max.Sub(b.min)
 }
 
+// Expand expands b to contain other
 func (b *Box) Expand(other *Box) {
 	if other.min.X < b.min.X {
 		b.min.X = other.min.X
@@ -91,6 +97,7 @@ func (b *Box) Expand(other *Box) {
 	}
 }
 
+// LongestAxis returns the largest axis difference between box min and max
 func (b *Box) LongestAxis() int {
 	xLength := math.Abs(b.max.X - b.min.X)
 	yLength := math.Abs(b.max.Y - b.min.Y)
@@ -104,6 +111,7 @@ func (b *Box) LongestAxis() int {
 	}
 }
 
+// Overlaps returns whether a box overlaps other
 func (b *Box) Overlaps(other *Box) bool {
 	x := b.max.X >= other.min.X && b.min.X <= other.max.X
 	y := b.max.Y >= other.min.Y && b.min.Y <= other.max.Y
