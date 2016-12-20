@@ -72,7 +72,7 @@ type rect struct {
 func main() {
 	//defer profile.Start().Stop()
 	// Image size
-	w, h := 512, 512
+	w, h := 4096, 4096
 	// define chunk size for rendering
 	xChunkSize := w / 32
 	yChunkSize := h / 32
@@ -94,8 +94,8 @@ func main() {
 	eye := Vec3{0, 1, -2.0}
 	camera := Camera{}
 	camera.Init(eye, w, h)
-	jobChan := make(chan rect, w*h)
-	imgChan := make(chan Pixel, w*h*xChunkSize*yChunkSize*2)
+	jobChan := make(chan rect, 10)
+	imgChan := make(chan Pixel, w*h)
 	renderer := Renderer{scene, w, h, imgChan, &camera, jobChan}
 	///////////////////
 	fmt.Println("Rendering...")
@@ -108,7 +108,7 @@ func main() {
 	for y := 0; y < h; y += yChunkSize {
 		for x := 0; x < w; x += xChunkSize {
 			wg.Add(1)
-			renderer.jobChan <- rect{x, y, x + xChunkSize, y + yChunkSize}
+			renderer.jobChan <- rect{x, x + xChunkSize, y, y + yChunkSize}
 		}
 	}
 	// Wait for all jobs to finish
