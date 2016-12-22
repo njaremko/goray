@@ -69,13 +69,27 @@ type rect struct {
 	bottom int
 }
 
+func determineChunkSize(max int) int {
+	if max%32 == 0 {
+		return 32
+	}
+
+	for i := 30; i <= max; i++ {
+		if max%i == 0 {
+			return i
+		}
+	}
+
+	return -1
+}
+
 func main() {
 	//defer profile.Start().Stop()
 	// Image size
-	w, h := 4096, 4096
+	w, h := 1920, 1080
 	// define chunk size for rendering
-	xChunkSize := w / 32
-	yChunkSize := h / 32
+	xChunkSize := determineChunkSize(w)
+	yChunkSize := determineChunkSize(h)
 	// Create geometry for the scene
 	mesh, err := OpenOBJ("teapot.obj")
 	if err != nil {
